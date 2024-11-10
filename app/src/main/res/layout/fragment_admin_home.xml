@@ -49,13 +49,15 @@
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pieChart"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="0dp"
             android:layout_below="@id/tvFinancialReportTitle"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="99dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/lblProductTotSale"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvFinancialReportTitle" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- ListView/RecyclerView for Detailed Sales Data -->
         <androidx.recyclerview.widget.RecyclerView
@@ -63,15 +65,51 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/pieChart"
-            android:layout_marginTop="420dp"
+            android:layout_marginTop="630dp"
             android:scrollbars="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pieChart"
-            app:layout_constraintVertical_bias="1.0"
+            app:layout_constraintTop_toBottomOf="@+id/lblProductTotSale"
             tools:listitem="@layout/item_sales_data" />
+
+        <TextView
+            android:id="@+id/lblProductName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Product Name"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pieChart" />
+
+        <TextView
+            android:id="@+id/lblProductProfit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="32dp"
+            android:text="Product Profit"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/pieChart"
+            app:layout_constraintTop_toBottomOf="@+id/pieChart" />
+
+        <TextView
+            android:id="@+id/lblProductTotSale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="297dp"
+            android:text="Total Sales"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pieChart" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
