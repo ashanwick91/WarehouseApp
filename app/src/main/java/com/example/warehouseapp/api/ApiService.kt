@@ -1,12 +1,15 @@
 package com.example.warehouseapp.api
 
+import com.example.warehouseapp.model.FinancialReport
 import com.example.warehouseapp.model.LoginRequest
 import com.example.warehouseapp.model.LoginResponse
 import com.example.warehouseapp.model.RegisterRequest
 import com.example.warehouseapp.model.RegisterResponse
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -15,4 +18,9 @@ interface ApiService {
 
     @POST("/login")
     fun loginUser(@Body loginRequest: LoginRequest): Call<LoginResponse>
+
+    @GET("/reports")
+    fun getFinancialReport(
+        @Query("reportType") reportType: String
+    ): Call<FinancialReport>
 }

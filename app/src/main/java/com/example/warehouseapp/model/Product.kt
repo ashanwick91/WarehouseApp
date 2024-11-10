@@ -12,5 +12,5 @@ data class Product(
     val quantity: Int,  // Current stock
     val createdAt: Date,
     val updatedAt: Date,
-    val transactions: List<Transaction> = listOf()
+    //val transactions: List<Transaction> = listOf()
 )
