@@ -3,6 +3,7 @@ package com.example.warehouseapp.api
 import com.example.warehouseapp.model.FinancialReport
 import com.example.warehouseapp.model.LoginRequest
 import com.example.warehouseapp.model.LoginResponse
+import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.model.RegisterRequest
 import com.example.warehouseapp.model.RegisterResponse
 import retrofit2.Call
@@ -23,4 +24,7 @@ interface ApiService {
     fun getFinancialReport(
         @Query("reportType") reportType: String
     ): Call<FinancialReport>
+
+    @GET("/products")
+    fun getAllProducts(): Call<List<Product>>
 }
