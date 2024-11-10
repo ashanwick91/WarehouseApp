@@ -9,13 +9,17 @@ data class Order(
     val orderTotal: Double,
     val orderDate: Date,
     val status: String,  // Example: "Pending", "Shipped", "Delivered"
-    val transactionId: String,  // Reference to a transaction
     val createdAt: Date
 )
 
 data class OrderItem(
     val productId: String,  // MongoDB ObjectId as a string
-    val productName: String,
-    val price: Double,
-    val quantity: Int
+    val productName: String,  // Name of the product
+    val category: String,  // Product category
+    val salesAmount: Double,  // Total sales amount
+    val profitAmount: Double,  // Profit from the transaction
+    val quantitySold: Int,  // Quantity sold in this order
+    val transactionDate: Date,  // Date of the transaction
+    val price: Double,  // Price per unit (if needed)
+    val quantity: Int  // Quantity ordered
 )
