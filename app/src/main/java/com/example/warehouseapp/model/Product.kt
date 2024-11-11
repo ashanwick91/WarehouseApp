@@ -11,7 +11,7 @@ data class Product(
     val price: Double,
     val category: String,  // Example: "Electronics", "Furniture"
     val image: String,  // URL to the product image
-    val quantity: Int,  // Current stock
+    var quantity: Int,  // Current stock
     val createdAt: Date,
     val updatedAt: Date,
     //val transactions: List<Transaction> = listOf()
