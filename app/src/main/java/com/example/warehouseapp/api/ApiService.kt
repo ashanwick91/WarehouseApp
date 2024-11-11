@@ -3,6 +3,8 @@ package com.example.warehouseapp.api
 import com.example.warehouseapp.model.FinancialReport
 import com.example.warehouseapp.model.LoginRequest
 import com.example.warehouseapp.model.LoginResponse
+import com.example.warehouseapp.model.Order
+import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.model.RegisterRequest
 import com.example.warehouseapp.model.RegisterResponse
@@ -27,4 +29,7 @@ interface ApiService {
 
     @GET("/products")
     fun getAllProducts(): Call<List<Product>>
+
+    @POST("/order")
+    fun placeOrder(@Body cartRequest: OrderRequest): Call<OrderRequest>
 }

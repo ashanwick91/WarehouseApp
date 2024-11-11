@@ -3,8 +3,10 @@ package com.example.warehouseapp.auth
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.auth0.android.jwt.JWT
 import com.example.warehouseapp.MainActivity
 import com.example.warehouseapp.R
 import com.example.warehouseapp.api.ApiService
@@ -85,7 +87,7 @@ class LoginActivity : AppCompatActivity() {
                             .show()
 
                         // Save the token in SharedPreferences
-                        saveTokenToPreferences(it)
+                        saveTokenToPreferences(token)
 
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         startActivity(intent)
