@@ -21,6 +21,8 @@ interface ApiService {
 
     @GET("/reports")
     fun getFinancialReport(
-        @Query("reportType") reportType: String
+        @Query("reportType") reportType: String,
+        @Query("filterMonth") filterMonth: String? = null,
+        @Query("filterDate") filterDate: String? = null
     ): Call<FinancialReport>
 }
