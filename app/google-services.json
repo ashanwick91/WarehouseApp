@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "664773464912",
+    "project_id": "warehouseapp-42ba3",
+    "storage_bucket": "warehouseapp-42ba3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:664773464912:android:68a0683865ce45df509255",
+        "android_client_info": {
+          "package_name": "com.example.warehouseapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkKutmFzkib3K4WZzdXY662ZujZSn1z2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

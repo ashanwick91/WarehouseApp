@@ -10,11 +10,9 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.warehouseapp.OnProductItemClickListener
-import com.example.warehouseapp.R
 import com.example.warehouseapp.adapter.ProductAdapter
 import com.example.warehouseapp.api.ApiService
 import com.example.warehouseapp.api.RetrofitClient
-import com.example.warehouseapp.databinding.FragmentAdminHomeBinding
 import com.example.warehouseapp.databinding.FragmentCustomerHomeBinding
 import com.example.warehouseapp.model.Item
 import com.example.warehouseapp.model.Product
@@ -57,7 +55,7 @@ class CustomerHomeFragment : Fragment(),OnProductItemClickListener {
     }
 
     private fun fetchAllProducts() {
-        apiService.getAllProducts().enqueue(object : Callback<List<Product>> {
+        apiService.getProducts().enqueue(object : Callback<List<Product>> {
             override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
                 if (response.isSuccessful && response.body() != null) {
                     val products = response.body()!!
