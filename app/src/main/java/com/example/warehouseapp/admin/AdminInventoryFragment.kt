@@ -16,6 +16,7 @@ import com.example.warehouseapp.databinding.FragmentAdminInventoryBinding
 import com.example.warehouseapp.listener.AdminProductItemClickListener
 import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.util.readBaseUrl
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import org.json.JSONObject
 import retrofit2.Call
@@ -91,8 +92,7 @@ class AdminInventoryFragment : Fragment(R.layout.fragment_admin_inventory),
 
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                searchTerm = null
-                fetchProducts()
+
                 return true
             }
 
@@ -224,6 +224,21 @@ class AdminInventoryFragment : Fragment(R.layout.fragment_admin_inventory),
     }
 
     override fun onItemCLick(productId: String) {
-        deleteProduct(productId)
+        showDeleteConfirmationDialog(productId)
+    }
+
+    // Show confirmation dialog before deleting a product
+    private fun showDeleteConfirmationDialog(productId: String) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Delete Product")
+            .setMessage("Are you sure you want to delete this product?")
+            .setPositiveButton("DELETE") { dialog, _ ->
+                deleteProduct(productId)  // Call delete function if confirmed
+                dialog.dismiss()
+            }
+            .setNegativeButton("CANCEL") { dialog, _ ->
+                dialog.dismiss()  // Dismiss the dialog if canceled
+            }
+            .show()
     }
 }
