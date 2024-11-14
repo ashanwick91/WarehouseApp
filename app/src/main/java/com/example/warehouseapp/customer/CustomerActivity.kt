@@ -23,7 +23,7 @@ class CustomerActivity : AppCompatActivity() {
         val view = binding.root
 
         setContentView(view)
-
+        clearOrderPreferences(this)
         binding.mainTitle.text = "HOME"
 
         // Load the default fragment
@@ -69,6 +69,12 @@ class CustomerActivity : AppCompatActivity() {
         editor.apply()
     }
 
+    private fun clearOrderPreferences(context: Context) {
+        val sharedPref = context.getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.clear() // Clears all stored data in "order_prefs"
+        editor.apply() // Apply the changes asynchronously
+    }
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.frame_container, fragment)
