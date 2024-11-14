@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp">
 
-    <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:elevation="4dp"
         android:background="?android:attr/colorBackground"
         app:cardCornerRadius="8dp">
@@ -25,8 +25,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0.4"
                 android:text="Product Name"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/salesPercentageProduct"

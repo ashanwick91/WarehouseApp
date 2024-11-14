@@ -93,7 +93,7 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
     }
 
     private fun fetchAllProducts() {
-        apiService.getAllProducts().enqueue(object : Callback<List<Product>> {
+        apiService.getProducts().enqueue(object : Callback<List<Product>> {
             override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
                 if (response.isSuccessful && response.body() != null) {
                     val products = response.body()!!

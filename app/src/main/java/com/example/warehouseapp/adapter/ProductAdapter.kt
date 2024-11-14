@@ -41,7 +41,7 @@ class ProductAdapter(
         holder.productCategory.text = item.category
 
         Picasso.get()
-            .load(item.image)
+            .load(item.imageUrl)
             .placeholder(R.drawable.sample_shoe_image)
             .into(holder.productImage)
 
