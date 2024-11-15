@@ -47,4 +47,21 @@ interface ApiService {
 
     @POST("/order")
     fun placeOrder(@Body cartRequest: OrderRequest): Call<OrderRequest>
+
+    @GET("/categories")
+    fun getCategories(
+        @Header("Authorization") token: String
+    ): Call<List<String>> // The response is a list of category names
+
+    @POST("/categories")
+    fun addCategory(
+        @Header("Authorization") token: String,
+        @Body category: Map<String, String>
+    ): Call<Void> // Adjust return type if needed
+
+    @POST("/products")
+    fun addProduct(
+        @Header("Authorization") token: String,
+        @Body product: Product
+    ): Call<Void>
 }

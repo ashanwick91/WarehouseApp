@@ -118,6 +118,13 @@ class AdminInventoryFragment : Fragment(R.layout.fragment_admin_inventory),
             }
         }
 
+        binding.fabAddProduct.setOnClickListener{
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frame_container, AddProductFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
     }
 
     private fun fetchProducts(searchTerm: String? = null, filters: Set<String> = emptySet()) {

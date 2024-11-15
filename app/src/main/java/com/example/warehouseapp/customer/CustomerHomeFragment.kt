@@ -128,7 +128,7 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
         } else {
             // Add a new item if it doesn't exist in the cart
             val orderItem = OrderItemRequest(
-                productId = product.id,
+                productId = product.id!!,
                 productName = product.name,
                 category = product.category,
                 salesAmount = product.price * quantity,
