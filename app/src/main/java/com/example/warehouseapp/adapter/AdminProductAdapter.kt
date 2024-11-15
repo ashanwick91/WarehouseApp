@@ -41,10 +41,10 @@ class AdminProductAdapter(
             binding.tvCategoryAdmin.text = String.format("Category: ${item.category}")
 
             binding.btnDelAdmin.setOnClickListener {
-                adminProductItemClickListener.onItemCLick(item.id)
+                adminProductItemClickListener.onItemCLick(item.id!!)
             }
 
-            loadImageFromFirebase(item.imageUrl, binding.ivProductAdmin)
+            item.imageUrl?.let { loadImageFromFirebase(it, binding.ivProductAdmin) }
         }
     }
 

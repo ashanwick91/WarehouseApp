@@ -73,7 +73,7 @@ class ProductAdapter(
                 quantity = 0
                 holder.quantityText.text = quantity.toString()
                 item.cartQuantity = quantity
-                listener.onRemoveFromCartClick(item.id) // Remove from cart if quantity reaches zero
+                listener.onRemoveFromCartClick(item.id!!) // Remove from cart if quantity reaches zero
             }
         }
         holder.quantityText.text = quantity.toString()
