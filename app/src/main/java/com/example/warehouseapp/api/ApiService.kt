@@ -13,6 +13,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -62,6 +63,13 @@ interface ApiService {
     @POST("/products")
     fun addProduct(
         @Header("Authorization") token: String,
+        @Body product: Product
+    ): Call<Void>
+
+    @PUT("/products/{id}")
+    fun updateProduct(
+        @Header("Authorization") token: String,
+        @Path("id") productId: String,
         @Body product: Product
     ): Call<Void>
 }
