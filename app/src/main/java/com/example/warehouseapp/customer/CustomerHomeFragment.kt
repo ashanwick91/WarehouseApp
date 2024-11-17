@@ -38,6 +38,7 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
     private lateinit var productRecyclerView: RecyclerView
     private lateinit var productAdapter: ProductAdapter
     private var customerId: String = ""
+    private lateinit var order: OrderRequest
 
     private val cartItems = mutableListOf<OrderItemRequest>()
 
@@ -60,7 +61,7 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
         productRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         productAdapter = ProductAdapter(emptyList(), this)
         productRecyclerView.adapter = productAdapter
-
+        Log.d("testing view 1", "customerId")
         val cartIcon = view.findViewById<ImageView>(R.id.cart_icon)
         fetchAllProducts()
         loadOrderFromPreferences()
@@ -188,53 +189,56 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
     }
 
     private fun loadOrderFromPreferences(): OrderRequest? {
-        productAdapter.notifyDataSetChanged()
         val sharedPref = requireContext().getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
-        val customerId = sharedPref.getString("customer_id", null) ?: return null
-        val orderTotal = sharedPref.getFloat("order_total", 0.0f).toDouble()
-        val status = sharedPref.getString("status", "Pending") ?: "Pending"
-        val createdAtStr = sharedPref.getString("created_at", "")
-        val createdAt = dateFormat.parse(createdAtStr) ?: OffsetDateTime.now()
         val orderItems = mutableListOf<OrderItemRequest>()
         var index = 0
+
         while (sharedPref.contains("item_${index}_product_id")) {
-            val productId = sharedPref.getString("item_${index}_product_id", null) ?: break
-            val productName = sharedPref.getString("item_${index}_product_name", null) ?: break
-            val category = sharedPref.getString("item_${index}_category", null) ?: break
+            val productId = sharedPref.getString("item_${index}_product_id", null)
+            val productName = sharedPref.getString("item_${index}_product_name", null)
+            val category = sharedPref.getString("item_${index}_category", null)
             val salesAmount = sharedPref.getFloat("item_${index}_sales_amount", 0.0f).toDouble()
             val quantitySold = sharedPref.getInt("item_${index}_quantity_sold", 0)
-            val transactionDateStr = sharedPref.getString("item_${index}_transaction_date", "")
-            val transactionDate = dateFormat.parse(transactionDateStr) ?: OffsetDateTime.now()
-
             val price = sharedPref.getFloat("item_${index}_price", 0.0f).toDouble()
             val quantity = sharedPref.getInt("item_${index}_quantity", 0)
-            orderItems.add(
-                OrderItemRequest(
-                    productId = productId,
-                    productName = productName,
-                    category = category,
-                    salesAmount = salesAmount,
-                    profitAmount = 0.0,
-                    quantitySold = quantitySold,
-                    transactionDate = transactionDate,
-                    price = price,
-                    quantity = quantity
+            val transactionDate = sharedPref.getString("item_${index}_transaction_date", null)
+
+            if (productId != null && productName != null && category != null) {
+                orderItems.add(
+                    OrderItemRequest(
+                        productId = productId,
+                        productName = productName,
+                        category = category,
+                        salesAmount = salesAmount,
+                        profitAmount = 0.0, // Adjust if necessary
+                        quantitySold = quantitySold,
+                        price = price,
+                        quantity = quantity,
+                        transactionDate = transactionDate ?: OffsetDateTime.now().toString()
+                    )
                 )
-            )
+            }
             index++
         }
 
-        return OrderRequest(
+        // Initialize the order object
+        val orderTotal = orderItems.sumOf { it.salesAmount }
+        order = OrderRequest(
             customerId = customerId,
             items = orderItems,
             orderTotal = orderTotal,
-            orderDate = OffsetDateTime.now(),
-            status = status,
-            createdAt = createdAt
+            orderDate = OffsetDateTime.now().toString(),
+            status = "Pending",
+            createdAt = OffsetDateTime.now().toString()
         )
-    }
 
+        // Sync with the cart items
+        cartItems.clear()
+        cartItems.addAll(orderItems)
+
+        productAdapter.notifyDataSetChanged()
+        return order
+    }
     override fun onRemoveFromCartClick(productId: String) {
         val existingItem = cartItems.find { it.productId == productId }
         if (existingItem != null) {
@@ -243,4 +247,6 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
         }
         Toast.makeText(requireContext(), "Item removed from cart", Toast.LENGTH_SHORT).show()
     }
+
+
 }
