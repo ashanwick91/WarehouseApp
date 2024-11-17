@@ -118,7 +118,7 @@ class AdminInventoryFragment : Fragment(R.layout.fragment_admin_inventory),
             }
         }
 
-        binding.fabAddProduct.setOnClickListener{
+        binding.fabAddProduct.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.frame_container, AddProductFragment())
                 .addToBackStack(null)
@@ -230,8 +230,15 @@ class AdminInventoryFragment : Fragment(R.layout.fragment_admin_inventory),
         _binding = null
     }
 
-    override fun onItemCLick(productId: String) {
+    override fun onDeleteClick(productId: String) {
         showDeleteConfirmationDialog(productId)
+    }
+
+    override fun onEditClick(product: Product) {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.frame_container, AddProductFragment(product))
+            .addToBackStack(null)
+            .commit()
     }
 
     // Show confirmation dialog before deleting a product

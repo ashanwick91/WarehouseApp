@@ -26,6 +26,7 @@ import com.example.warehouseapp.api.ApiService
 import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.databinding.FragmentAddProductBinding
 import com.example.warehouseapp.model.Product
+import com.example.warehouseapp.util.loadImageFromFirebase
 import com.example.warehouseapp.util.readBaseUrl
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -39,7 +40,9 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.UUID
 
-class AddProductFragment : Fragment() {
+class AddProductFragment(
+    private val product: Product? = null
+) : Fragment() {
 
     private var _binding: FragmentAddProductBinding? = null
     private val binding get() = _binding!!
@@ -71,8 +74,13 @@ class AddProductFragment : Fragment() {
         val baseUrl = readBaseUrl(requireContext())
         apiService = RetrofitClient.getRetrofitInstance(baseUrl).create(ApiService::class.java)
 
-        // Fetch categories and populate AutoCompleteTextView
-        fetchCategories()
+        if (product != null) {
+            binding.tvTitle.text = String.format("Edit Product")
+            fetchCategories(product.category)
+            populateForm(product)
+        } else {
+            fetchCategories()
+        }
 
         binding.ivProductImage.setOnClickListener { chooseCameraOrPhotos() }
 
@@ -122,7 +130,11 @@ class AddProductFragment : Fragment() {
         // Set up the save button
         binding.saveButton.setOnClickListener {
             if (validateInputs()) {
-                saveProduct()
+                if (product != null) {
+                    updateProduct(product)
+                } else {
+                    saveProduct()
+                }
             }
         }
 
@@ -135,7 +147,15 @@ class AddProductFragment : Fragment() {
         }
     }
 
-    private fun fetchCategories() {
+    private fun populateForm(product: Product) {
+        product.imageUrl?.let { loadImageFromFirebase(it, binding.ivProductImage) }
+        binding.nameInput.setText(product.name)
+        binding.descInput.setText(product.description)
+        binding.priceInput.setText(product.price.toString())
+        binding.qtyInput.setText(product.quantity.toString())
+    }
+
+    private fun fetchCategories(category: String? = null) {
         apiService.getCategories("Bearer $token").enqueue(object : Callback<List<String>> {
             override fun onResponse(call: Call<List<String>>, response: Response<List<String>>) {
                 if (response.isSuccessful) {
@@ -149,11 +169,15 @@ class AddProductFragment : Fragment() {
                             categories
                         )
                         binding.catInput.setAdapter(adapter)
-                        // Set the first item as the default selection
+
+                        var selectedCat: String? = categories[0]
+                        category?.let {
+                            selectedCat = categories.firstOrNull { it == category }
+                        }
                         binding.catInput.setText(
-                            categories[0],
+                            selectedCat,
                             false
-                        ) // Set text without triggering dropdown
+                        )
                     }
 
                 } else {
@@ -350,6 +374,70 @@ class AddProductFragment : Fragment() {
                 Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private fun updateProduct(product: Product) {
+        if (imageUrl == null) {
+            imageUrl = product.imageUrl
+        }
+
+        val updatedProduct = Product(
+            name = binding.nameInput.text.toString().trim(),
+            description = binding.descInput.text.toString().trim(),
+            price = binding.priceInput.text.toString().toDouble(),
+            category = binding.catInput.text.toString(),
+            imageUrl = imageUrl,
+            quantity = binding.qtyInput.text.toString().toInt(),
+            createdAt = product.createdAt
+        )
+
+        apiService.updateProduct("Bearer $token", product.id!!, updatedProduct)
+            .enqueue(object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    if (response.isSuccessful) {
+                        val snackbar = Snackbar.make(
+                            binding.root,
+                            "Product updated successfully",
+                            Snackbar.LENGTH_LONG
+                        )
+                        snackbar.setAction(R.string.dismiss) {
+                            snackbar.dismiss();
+                        }
+                        snackbar.show()
+
+                    } else {
+                        // Retrieve and parse the error body
+                        val errorBody = response.errorBody()?.string()
+                        errorBody?.let {
+                            try {
+                                val jsonObject = JSONObject(it)
+                                val errorMessage = jsonObject.getString("msg")
+
+                                val snackbar = Snackbar.make(
+                                    binding.root,
+                                    "Failed to update product. $errorMessage",
+                                    Snackbar.LENGTH_LONG
+                                )
+                                snackbar.setAction(R.string.dismiss) {
+                                    snackbar.dismiss();
+                                }
+                                snackbar.show()
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Product update failed",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            })
     }
 
 
