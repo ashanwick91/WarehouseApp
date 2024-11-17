@@ -67,12 +67,26 @@ class CartItemAdapter(
                 val updatedItem = item.copy(quantity = newQuantity)
                 val updatedItems = cart.items.toMutableList()
                 updatedItems[itemIndex] = updatedItem
-
+                // Save the updated cart item to SharedPreferences
+                saveItemToPreferences(updatedItem, itemIndex)
                 cart = cart.copy(items = updatedItems)
                 onQuantityChanged(cart)
                 itemQuantity.text = newQuantity.toString()
                 notifyItemChanged(adapterPosition)
             }
         }
+        private fun saveItemToPreferences(item: OrderItemRequest, index: Int) {
+            val sharedPref = context.getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
+            val editor = sharedPref.edit()
+            editor.putString("item_${index}_product_id", item.productId)
+            editor.putString("item_${index}_product_name", item.productName)
+            editor.putString("item_${index}_category", item.category)
+            editor.putFloat("item_${index}_sales_amount", item.salesAmount.toFloat())
+            editor.putInt("item_${index}_quantity", item.quantity)
+            editor.putFloat("item_${index}_price", item.price.toFloat())
+            editor.putString("item_${index}_transaction_date", item.transactionDate.toString())
+            editor.apply()
+        }
+
     }
 }

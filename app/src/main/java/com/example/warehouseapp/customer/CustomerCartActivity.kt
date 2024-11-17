@@ -22,6 +22,7 @@ import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.databinding.ActivityCustomerCartBinding
 import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.OrderItemRequest
+import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.util.readBaseUrl
 import com.google.android.material.snackbar.Snackbar
 import retrofit2.Call
@@ -78,8 +79,50 @@ class CustomerCartActivity : AppCompatActivity() {
         setupRecyclerView(order)
         updateTotalPrice(order)
         setupLeftSwipeToDelete()
+        saveOrderToPreferences(order)
 
         backImageView.setOnClickListener {
+
+            val orderItems = mutableListOf<OrderItemRequest>()
+            val sharedPref = getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
+            var index = 0
+            while (sharedPref.contains("item_${index}_product_id")) {
+                val productId = sharedPref.getString("item_${index}_product_id", null)
+                val productName = sharedPref.getString("item_${index}_product_name", null)
+                val category = sharedPref.getString("item_${index}_category", null)
+                val salesAmount = sharedPref.getFloat("item_${index}_sales_amount", 0.0f).toDouble()
+                val quantitySold = sharedPref.getInt("item_${index}_quantity_sold", 0)
+                val price = sharedPref.getFloat("item_${index}_price", 0.0f).toDouble()
+                val quantity = sharedPref.getInt("item_${index}_quantity", 0)
+
+                if (productId != null && productName != null && category != null) {
+                    orderItems.add(
+                        OrderItemRequest(
+                            productId = productId,
+                            productName = productName,
+                            category = category,
+                            salesAmount = salesAmount,
+                            profitAmount = 0.0,
+                            quantitySold = quantitySold,
+                            price = price,
+                            quantity = quantity,
+                            transactionDate = OffsetDateTime.now().toString()
+                        )
+                    )
+                }
+                index++
+            }
+
+            val order = OrderRequest(
+                customerId = customerId,
+                items = orderItems,
+                orderTotal = orderTotal,
+                status = "Pending",
+                orderDate = OffsetDateTime.now().toString(),
+                createdAt = OffsetDateTime.now().toString()
+            )
+
+            saveOrderToPreferences(order)
             val intent = Intent(this, CustomerActivity::class.java)
             startActivity(intent)
         }
@@ -139,6 +182,7 @@ class CustomerCartActivity : AppCompatActivity() {
                 }
             })
 
+
             val intent = Intent(this, CustomerPurchaseSucessActivity::class.java)
             startActivity(intent)
         }
@@ -179,7 +223,7 @@ class CustomerCartActivity : AppCompatActivity() {
 
         // Initialize the order object
         order = OrderRequest(
-            customerId = "67297169bf8d65d8a9983a8c",
+            customerId = customerId,
             items = orderItems,
             orderTotal = orderTotal,
             orderDate = OffsetDateTime.now(),
@@ -301,5 +345,31 @@ class CustomerCartActivity : AppCompatActivity() {
         totalTaxTextView.text = "$${"%.2f".format(tax)}"
         totalAmountTextView.text = "$${"%.2f".format(orderTotal)}"
     }
+
+    private fun saveOrderToPreferences(order: OrderRequest) {
+        val sharedPref = this.getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putString("customer_id", customerId)
+        editor.putFloat("order_total", order.orderTotal.toFloat())
+        editor.putString("status", order.status)
+        val createdDate = OffsetDateTime.now()
+        editor.putString("created_at", createdDate.toString())
+        val transactionDate = OffsetDateTime.now()
+        order.items.forEachIndexed { index, item ->
+            editor.putString("item_${index}_product_id", item.productId)
+            editor.putString("item_${index}_product_name", item.productName)
+            editor.putString("item_${index}_category", item.category)
+            editor.putFloat("item_${index}_sales_amount", item.salesAmount.toFloat())
+            editor.putInt("item_${index}_quantity_sold", item.quantitySold)
+            editor.putString(
+                "item_${index}_transaction_date",
+                transactionDate.toString()
+            ) // Format transactionDate
+            editor.putFloat("item_${index}_price", item.price.toFloat())
+            editor.putInt("item_${index}_quantity", item.quantity)
+        }
+        editor.apply()
+    }
+
 
 }

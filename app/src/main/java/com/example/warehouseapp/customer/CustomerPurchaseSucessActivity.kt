@@ -1,5 +1,6 @@
 package com.example.warehouseapp.customer
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -27,6 +28,11 @@ class CustomerPurchaseSucessActivity : AppCompatActivity() {
         continueShopping.setOnClickListener{
             val intent = Intent(this, CustomerActivity::class.java)
             startActivity(intent)
+            // Clear order preferences
+            val orderPref = getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
+            val orderEditor = orderPref.edit()
+            orderEditor.clear()
+            orderEditor.apply()
         }
 
 
