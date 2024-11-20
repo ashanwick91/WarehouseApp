@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_margin="12dp"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="8dp"
-    android:background="@color/white">
+    app:strokeWidth="2dp"
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,28 +30,28 @@
                 android:layout_height="50dp"
                 android:layout_marginEnd="12dp"
                 android:src="@drawable/order_icon"
-                 />
+                tools:src="@drawable/order_icon" />
 
             <!-- Order Date -->
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/orderDate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Nov 12, 2023"
-                android:textColor="#2952a3"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 tools:text="Nov 12, 2023" />
 
             <!-- Order Status -->
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/orderStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="end"
                 android:text="Completed"
-                android:textColor="#3BAF5B"
+                android:textColor="?attr/colorSecondary"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 tools:text="Completed" />
@@ -61,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="12dp"
-            android:background="@color/light_gray" />
+            android:background="?attr/colorOnSurfaceVariant" />
 
         <!-- Bottom Section: Items and Payments -->
         <LinearLayout
@@ -76,20 +77,20 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="No of Items: "
-                    android:textColor="#003300"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/noItems"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="2"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
                     tools:text="2" />
             </LinearLayout>
@@ -101,24 +102,24 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Payments: "
                     android:layout_marginLeft="12dp"
-                    android:textColor="#003300"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/paymentAmount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="$50.00"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
                     tools:text="$50.00" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

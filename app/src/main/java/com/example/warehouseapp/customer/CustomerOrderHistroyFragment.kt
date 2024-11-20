@@ -70,7 +70,7 @@ class CustomerOrderHistroyFragment : Fragment() {
         customerOrderHistroy = CustomerOrderHistroryAdapter(emptyList(), apiService)
         orderRecyclerView.adapter = customerOrderHistroy
         orderTotal = binding.textViewOrderTotalValue
-        orderDate = binding.orderDAteValue
+        orderDate = binding.orderDateValue
 
         val offsetDateTime = OffsetDateTime.parse(orderDateX, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         val date = Date.from(offsetDateTime.toInstant())
