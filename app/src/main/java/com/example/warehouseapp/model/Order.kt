@@ -8,9 +8,9 @@ data class Order(
     val customerId: String,  // ID from the Users collection
     val items: List<OrderItem>,
     val orderTotal: Double,
-    val orderDate: OffsetDateTime,
+    val orderDate: String,
     val status: String,  // Example: "Pending", "Shipped", "Delivered"
-    val createdAt: Serializable
+    val createdAt: String
 )
 
 data class OrderItem(
@@ -20,7 +20,7 @@ data class OrderItem(
     var salesAmount: Double,  // Total sales amount
     val profitAmount: Double,  // Profit from the transaction
     val quantitySold: Int,  // Quantity sold in this order
-    val transactionDate: Serializable,  // Date of the transaction
+    val transactionDate: String,  // Date of the transaction
     val price: Double,  // Price per unit (if needed)
     var quantity: Int  // Quantity ordered
 )

@@ -40,8 +40,8 @@ class CartItemAdapter(
         private val itemName: TextView = itemView.findViewById(R.id.item_name)
         private val itemPrice: TextView = itemView.findViewById(R.id.item_price)
         private val itemQuantity: TextView = itemView.findViewById(R.id.item_quantity)
-        private val btnDecrease: MaterialButton = itemView.findViewById(R.id.btn_decrease)
-        private val btnIncrease: MaterialButton = itemView.findViewById(R.id.btn_increase)
+        private val btnDecrease: ImageView = itemView.findViewById(R.id.btn_decrease)
+        private val btnIncrease: ImageView = itemView.findViewById(R.id.btn_increase)
 
         fun bind(item: OrderItemRequest) {
             itemName.text = item.productName

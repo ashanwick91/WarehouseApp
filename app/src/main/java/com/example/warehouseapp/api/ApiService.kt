@@ -3,7 +3,10 @@ package com.example.warehouseapp.api
 import com.example.warehouseapp.model.FinancialReport
 import com.example.warehouseapp.model.LoginRequest
 import com.example.warehouseapp.model.LoginResponse
+import com.example.warehouseapp.model.Order
+import com.example.warehouseapp.model.OrderDetails
 import com.example.warehouseapp.model.OrderRequest
+import com.example.warehouseapp.model.OrdersResponse
 import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.model.RegisterRequest
 import com.example.warehouseapp.model.RegisterResponse
@@ -72,4 +75,15 @@ interface ApiService {
         @Path("id") productId: String,
         @Body product: Product
     ): Call<Void>
+
+    @GET("/orders/{customer_id}")
+    fun getOrdersBCustomer(
+        @Path("customer_id") customerId: String
+    ): Call<OrdersResponse>
+
+    @GET("/order/{order_id}")
+    fun getOrdersByOrderID(
+        @Path("order_id") orderId: String
+    ): Call<Order>
+
 }
