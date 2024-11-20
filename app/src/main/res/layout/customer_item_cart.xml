@@ -55,15 +55,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
-                <com.google.android.material.button.MaterialButton
+                <ImageView
                     android:id="@+id/btn_decrease"
-                    style="Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="55dp"
-                    android:layout_height="40dp"
-                    android:text="-"
-                    android:textColor="@android:color/white"
-                    app:cornerRadius="20dp" />
+                    android:layout_width="37dp"
+                    android:layout_height="37dp"
+                    android:padding="10dp"
+                    android:background="@drawable/circle_border_grey"
+                    android:src="@drawable/minusicon"
+                    android:contentDescription="Decrease quantity" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/item_quantity"
@@ -73,14 +72,13 @@
                     android:text="2"
                     android:textSize="16sp" />
 
-                <com.google.android.material.button.MaterialButton
+                <ImageView
                     android:id="@+id/btn_increase"
-                    style="Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="55dp"
+                    android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:text="+"
-                    android:textColor="@android:color/white"
-                    app:cornerRadius="20dp" />
+                    android:padding="0dp"
+                    android:src="@drawable/baseline_add_circle_24"
+                    android:contentDescription="Increase quantity" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

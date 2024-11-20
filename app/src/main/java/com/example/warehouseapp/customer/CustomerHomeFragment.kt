@@ -61,7 +61,6 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
         productRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         productAdapter = ProductAdapter(emptyList(), this)
         productRecyclerView.adapter = productAdapter
-        Log.d("testing view 1", "customerId")
         val cartIcon = view.findViewById<ImageView>(R.id.cart_icon)
         fetchAllProducts()
         loadOrderFromPreferences()
