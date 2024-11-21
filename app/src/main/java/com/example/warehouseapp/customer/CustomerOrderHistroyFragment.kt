@@ -1,23 +1,28 @@
 package com.example.warehouseapp.customer
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.auth0.android.jwt.JWT
+import com.example.warehouseapp.R
 import com.example.warehouseapp.adapter.CustomerOrderHistroryAdapter
 import com.example.warehouseapp.api.ApiService
 import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.databinding.FragmentCustomerOrderHistroyBinding
 import com.example.warehouseapp.model.Order
 import com.example.warehouseapp.model.OrderDetails
+import com.example.warehouseapp.model.OrderItemRequest
+import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.util.readBaseUrl
 import retrofit2.Call
 import retrofit2.Callback
@@ -37,7 +42,8 @@ class CustomerOrderHistroyFragment : Fragment() {
     private var customerId: String = ""
     private lateinit var orderTotal : TextView
     private lateinit var orderDate : TextView
-
+    private lateinit var backImageView: ImageView
+    private lateinit var carticon: ImageView
 
 
     override fun onCreateView(
@@ -71,7 +77,8 @@ class CustomerOrderHistroyFragment : Fragment() {
         orderRecyclerView.adapter = customerOrderHistroy
         orderTotal = binding.textViewOrderTotalValue
         orderDate = binding.orderDateValue
-
+        backImageView = binding.backButton
+        carticon = binding.cartIcon
         val offsetDateTime = OffsetDateTime.parse(orderDateX, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         val date = Date.from(offsetDateTime.toInstant())
 
@@ -82,6 +89,23 @@ class CustomerOrderHistroyFragment : Fragment() {
         orderDate.setText(formattedDate)
         if (orderId != null) {
             fetchOrderDetails(orderId)
+        }
+
+        backImageView.setOnClickListener {
+
+            val customerHistoryFragment = CustomerHistoryFragment()
+
+            // Navigate to the CustomerOrderHistoryFragment
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frame_container, customerHistoryFragment) // Replace with your container ID
+                .addToBackStack(null) // Add to back stack to allow navigation back
+                .commit()
+        }
+
+        // On clicking the cart icon, create an Order and add OrderItems to it
+        carticon.setOnClickListener {
+            val intent = Intent(requireContext(), CustomerCartActivity::class.java)
+            startActivity(intent)
         }
         return view
     }
