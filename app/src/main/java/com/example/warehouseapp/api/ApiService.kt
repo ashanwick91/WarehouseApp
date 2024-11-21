@@ -10,6 +10,7 @@ import com.example.warehouseapp.model.OrdersResponse
 import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.model.RegisterRequest
 import com.example.warehouseapp.model.RegisterResponse
+import com.example.warehouseapp.model.User
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -85,5 +86,18 @@ interface ApiService {
     fun getOrdersByOrderID(
         @Path("order_id") orderId: String
     ): Call<Order>
+
+    @GET("/users/{id}")
+    fun getUserProfile(
+        @Path("id") userId: String,
+        @Header("Authorization") token: String
+    ): Call<User>
+
+    @PUT("/users/{id}")
+    fun updateUserProfile(
+        @Path("id") userId: String,
+        @Header("Authorization") token: String,
+        @Body updatedFields: Map<String, @JvmSuppressWildcards Any>
+    ): Call<Void>
 
 }
