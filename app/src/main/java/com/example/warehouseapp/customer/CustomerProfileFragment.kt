@@ -11,6 +11,7 @@ import com.example.warehouseapp.R
 import com.example.warehouseapp.auth.LoginActivity
 import com.example.warehouseapp.databinding.FragmentAdminHomeBinding
 import com.example.warehouseapp.databinding.FragmentCustomerProfileBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 
 class CustomerProfileFragment : Fragment() {
@@ -35,6 +36,18 @@ class CustomerProfileFragment : Fragment() {
             requireActivity().finish()
         }
 
+        binding.cardViewMyAccount.setOnClickListener{
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frame_container, CustomerEditProfileFragment())
+                .commit()
+        }
+
+        binding.cardViewHistory.setOnClickListener{
+            navigateToFragment(CustomerHistoryFragment())
+            highlightBottomNavigation(R.id.bottom_history)
+
+        }
+
         return view
     }
 
@@ -43,6 +56,18 @@ class CustomerProfileFragment : Fragment() {
         val editor = sharedPref.edit()
         editor.remove("jwt_token")
         editor.apply()
+    }
+
+    private fun navigateToFragment(fragment: Fragment) {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.frame_container, fragment)
+            .addToBackStack(null) // Maintain back stack for navigation
+            .commit()
+    }
+
+    private fun highlightBottomNavigation(itemId: Int) {
+        val bottomNavigationView = requireActivity().findViewById<BottomNavigationView>(R.id.customer_bottom_navigation)
+        bottomNavigationView?.selectedItemId = itemId
     }
 
 
