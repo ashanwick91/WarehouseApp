@@ -30,6 +30,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
+import java.util.Date
 import java.util.Locale
 
 
@@ -95,6 +96,7 @@ class CustomerCartActivity : AppCompatActivity() {
                 val price = sharedPref.getFloat("item_${index}_price", 0.0f).toDouble()
                 val quantity = sharedPref.getInt("item_${index}_quantity", 0)
 
+
                 if (productId != null && productName != null && category != null) {
                     orderItems.add(
                         OrderItemRequest(
@@ -106,7 +108,7 @@ class CustomerCartActivity : AppCompatActivity() {
                             quantitySold = quantitySold,
                             price = price,
                             quantity = quantity,
-                            transactionDate = OffsetDateTime.now().toString()
+                            transactionDate =Date()
                         )
                     )
                 }
@@ -118,8 +120,8 @@ class CustomerCartActivity : AppCompatActivity() {
                 items = orderItems,
                 orderTotal = orderTotal,
                 status = "Pending",
-                orderDate = OffsetDateTime.now().toString(),
-                createdAt = OffsetDateTime.now().toString()
+                orderDate = Date(),
+                createdAt = Date()
             )
 
             saveOrderToPreferences(order)
@@ -151,7 +153,7 @@ class CustomerCartActivity : AppCompatActivity() {
                             quantitySold = quantitySold,
                             price = price,
                             quantity = quantity,
-                            transactionDate = OffsetDateTime.now().toString()
+                            transactionDate = Date()
                         )
                     )
                 }
@@ -163,8 +165,8 @@ class CustomerCartActivity : AppCompatActivity() {
                 items = orderItems,
                 orderTotal = orderTotal,
                 status = "Pending",
-                orderDate = OffsetDateTime.now().toString(),
-                createdAt = OffsetDateTime.now().toString()
+                orderDate =  Date(),
+                createdAt =  Date()
             )
 
             // Send OrderRequest via API
@@ -212,7 +214,7 @@ class CustomerCartActivity : AppCompatActivity() {
                         salesAmount = salesAmount,
                         profitAmount = 0.0,
                         quantitySold = quantitySold,
-                        transactionDate = OffsetDateTime.now(),
+                        transactionDate =  Date(),
                         price = price,
                         quantity = quantity
                     )
@@ -226,9 +228,9 @@ class CustomerCartActivity : AppCompatActivity() {
             customerId = customerId,
             items = orderItems,
             orderTotal = orderTotal,
-            orderDate = OffsetDateTime.now(),
+            orderDate =  Date(),
             status = status ?: "Pending",
-            createdAt = OffsetDateTime.now()
+            createdAt =  Date()
         )
     }
 

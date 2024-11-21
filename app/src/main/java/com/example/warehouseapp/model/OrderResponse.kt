@@ -1,5 +1,7 @@
 package com.example.warehouseapp.model
 
+import java.util.Date
+
 data class OrdersResponse(
     val orders: List<OrderDetails>
 )

@@ -84,6 +84,6 @@ interface ApiService {
     @GET("/order/{order_id}")
     fun getOrdersByOrderID(
         @Path("order_id") orderId: String
-    ): Call<Order>
+    ): Call<OrderDetails>
 
 }

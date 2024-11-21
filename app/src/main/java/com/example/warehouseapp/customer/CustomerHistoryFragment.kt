@@ -112,7 +112,7 @@ class CustomerHistoryFragment : Fragment(), OnCustomerOrderClickListener {
         val bundle = Bundle()
         bundle.putString("orderId", order._id) // Pass the order ID or other required data
         bundle.putString("orderTotal", order.orderTotal.toString())
-        bundle.putString("orderDate", order.orderDate)
+        bundle.putString("orderDate", order.orderDate.toString())
         customerOrderHistoryFragment.arguments = bundle
 
         // Navigate to the CustomerOrderHistoryFragment
