@@ -1,12 +1,14 @@
 package com.example.warehouseapp.customer
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,11 +20,14 @@ import com.example.warehouseapp.api.ApiService
 import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.databinding.FragmentCustomerHistoryBinding
 import com.example.warehouseapp.model.OrderDetails
+import com.example.warehouseapp.model.OrderItemRequest
+import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.OrdersResponse
 import com.example.warehouseapp.util.readBaseUrl
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.time.OffsetDateTime
 
 class CustomerHistoryFragment : Fragment(), OnCustomerOrderClickListener {
 
@@ -30,8 +35,8 @@ class CustomerHistoryFragment : Fragment(), OnCustomerOrderClickListener {
     private lateinit var apiService: ApiService
     private lateinit var orderRecyclerView: RecyclerView
     private lateinit var customerHistoryAdapter: CustomerHistroyAdapter
+    private lateinit var carticon: ImageView
     private var customerId: String = ""
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -54,6 +59,14 @@ class CustomerHistoryFragment : Fragment(), OnCustomerOrderClickListener {
         orderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         customerHistoryAdapter = CustomerHistroyAdapter(emptyList(), this)
         orderRecyclerView.adapter = customerHistoryAdapter
+        carticon = binding.cartIcon
+        // On clicking the cart icon, create an Order and add OrderItems to it
+        carticon.setOnClickListener {
+            val intent = Intent(requireContext(), CustomerCartActivity::class.java)
+            startActivity(intent)
+
+        }
+
         fetchAllOrderHistory()
         return view
     }

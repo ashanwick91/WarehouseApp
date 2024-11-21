@@ -3,29 +3,36 @@ package com.example.warehouseapp.adapter
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.warehouseapp.R
-import com.example.warehouseapp.model.Item
-import com.example.warehouseapp.model.OrderItem
+import com.example.warehouseapp.api.ApiService
+import com.example.warehouseapp.databinding.CustomerItemCartBinding
 import com.example.warehouseapp.model.OrderItemRequest
 import com.example.warehouseapp.model.OrderRequest
-import com.google.android.material.button.MaterialButton
+import com.example.warehouseapp.model.Product
+import com.example.warehouseapp.util.loadImageFromFirebase
+import com.squareup.picasso.Picasso
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 
 class CartItemAdapter(
     private val context: Context,
-    private var cart: OrderRequest, // Mutable cart to update directly
+    private var cart: OrderRequest,
+    private var apiService: ApiService,// Mutable cart to update directly
     private val onQuantityChanged: (OrderRequest
             ) -> Unit // Callback to notify total price updates
 ) : RecyclerView.Adapter<CartItemAdapter.CartItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartItemViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.customer_item_cart, parent, false)
-        return CartItemViewHolder(view)
+        val binding =
+            CustomerItemCartBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return CartItemViewHolder(binding);
     }
 
     override fun onBindViewHolder(holder: CartItemViewHolder, position: Int) {
@@ -36,29 +43,55 @@ class CartItemAdapter(
 
     override fun getItemCount(): Int = cart.items.size
 
-    inner class CartItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val itemName: TextView = itemView.findViewById(R.id.item_name)
-        private val itemPrice: TextView = itemView.findViewById(R.id.item_price)
-        private val itemQuantity: TextView = itemView.findViewById(R.id.item_quantity)
-        private val btnDecrease: ImageView = itemView.findViewById(R.id.btn_decrease)
-        private val btnIncrease: ImageView = itemView.findViewById(R.id.btn_increase)
+    inner class CartItemViewHolder(private val binding:  CustomerItemCartBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: OrderItemRequest) {
-            itemName.text = item.productName
-            itemPrice.text = "$${item.price}"
-            itemQuantity.text = item.quantity.toString()
+            binding.itemName.text = item.productName
+            binding.itemPrice.text = String.format("$%.2f", item.price)
+            binding.itemQuantity.text = item.quantity.toString()
 
-            btnDecrease.setOnClickListener {
+            //item.imageUrl?.let { loadImageFromFirebase(it, binding.ivProductAdmin) }
+            // Decrease quantity
+            binding.btnDecrease.setOnClickListener {
                 if (item.quantity > 1) {
-                    val newQuantity = item.quantity - 1
-                    updateQuantity(item, newQuantity)
+                    updateQuantity(item, item.quantity - 1)
                 }
             }
 
-            btnIncrease.setOnClickListener {
-                val newQuantity = item.quantity + 1
-                updateQuantity(item, newQuantity)
+            // Increase quantity
+            binding.btnIncrease.setOnClickListener {
+                updateQuantity(item, item.quantity + 1)
             }
+
+            apiService.getProducts().enqueue(object : Callback<List<Product>> {
+                override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
+                    if (response.isSuccessful && response.body() != null) {
+                        val products = response.body()!!
+                        Log.d("productsproductsproducts", "productproducts: $products")
+                        // Filter and process only the product matching the productId
+                        val matchingProduct = products.find { it.id == item.productId }
+                        if (matchingProduct != null) {
+                            Log.e("matchingProductmatchingProduct", matchingProduct.imageUrl.toString())
+                        }
+                        if (matchingProduct != null) {
+                            Glide.with(binding.itemImage.context)
+                                .load(matchingProduct.imageUrl?.let { loadImageFromFirebase(it, binding.itemImage) }) // The URL of the image
+                                .placeholder(R.drawable.placeholder_image) // Optional placeholder
+                                .error(R.drawable.loading) // Optional error image
+                                .into(binding.itemImage) // Target ImageView
+
+                        } else {
+                            Log.e("CustomerOrderHistrory", "Product not found for ID: ${item.productId}")
+                        }
+                    } else {
+                        Log.e("CustomerOrderHistrory", "Failed to fetch products: ${response.code()}")
+                    }
+                }
+
+                override fun onFailure(call: Call<List<Product>>, t: Throwable) {
+                    Log.e("CustomerOrderHistrory", "Error fetching products", t)
+                }
+            })
         }
 
         private fun updateQuantity(item: OrderItemRequest, newQuantity: Int) {
@@ -71,7 +104,7 @@ class CartItemAdapter(
                 saveItemToPreferences(updatedItem, itemIndex)
                 cart = cart.copy(items = updatedItems)
                 onQuantityChanged(cart)
-                itemQuantity.text = newQuantity.toString()
+                binding.itemQuantity.text = newQuantity.toString()
                 notifyItemChanged(adapterPosition)
             }
         }

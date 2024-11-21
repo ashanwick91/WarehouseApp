@@ -1,5 +1,6 @@
 package com.example.warehouseapp.adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,8 +45,17 @@ class CustomerHistroyAdapter(
         holder.orderDate.text = formattedDate
 
         holder.orderStatus.text = item.status
-        holder.noItems.text = item.items.size.toString()
-        holder.paymentAmount.text = "$" + item.orderTotal.toString()
+
+        if (holder.orderStatus.text == "Pending") {
+            holder.orderStatus.setTextColor(Color.parseColor("#006600")) // Green
+        } else if  (   holder.orderStatus.text == "Shipped"){
+            holder.orderStatus.setTextColor(Color.parseColor("#FFA500")) // Orange
+        } else if (   holder.orderStatus.text == "Delivered") {
+            holder.orderStatus.setTextColor(Color.parseColor("#8080ff")) // Blue
+        }
+
+        holder.noItems.text = "Number of Items: " + item.items.size.toString()
+        holder.paymentAmount.text = "Total price : $" + item.orderTotal.toString()
         // Handle item click
         holder.itemView.setOnClickListener {
             listener.onViewOrderDetails(item) // Call the listener with the selected item
@@ -60,7 +70,7 @@ class CustomerHistroyAdapter(
     inner class CustomerHistroyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val orderDate: TextView = view.findViewById(R.id.orderDate)
         val orderStatus: TextView = view.findViewById(R.id.orderStatus)
-        val noItems: TextView = view.findViewById(R.id.noItems)
-        val paymentAmount: TextView = view.findViewById(R.id.paymentAmount)
+        val noItems: TextView = view.findViewById(R.id.tvNoOfItems)
+        val paymentAmount: TextView = view.findViewById(R.id.tvPaymentAmount)
     }
 }

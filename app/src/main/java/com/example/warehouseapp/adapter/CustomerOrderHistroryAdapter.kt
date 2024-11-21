@@ -14,6 +14,7 @@ import com.example.warehouseapp.model.ItemDetails
 import com.example.warehouseapp.model.OrderItem
 import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.util.MyAppGlideModule
+import com.example.warehouseapp.util.loadImageFromFirebase
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -51,12 +52,11 @@ class CustomerOrderHistroryAdapter(
                     }
                     if (matchingProduct != null) {
                         // Load the image URL into the ImageView using Glide
-
                         Glide.with(holder.itemImage.context)
-                            .load(matchingProduct.imageUrl) // The URL of the image
-                            .placeholder(R.drawable.placeholder_image) // Optional placeholder image
-                            .error(R.drawable.shoes1) // Optional error image
-                            .into(holder.itemImage) // The target ImageView
+                            .load(matchingProduct.imageUrl?.let { loadImageFromFirebase(it, holder.itemImage) }) // The URL of the image
+                            .placeholder(R.drawable.placeholder_image) // Optional placeholder
+                            .error(R.drawable.loading) // Optional error image
+                            .into(holder.itemImage) // Target ImageView
 
 
                         // Update other UI fields if needed
@@ -77,7 +77,7 @@ class CustomerOrderHistroryAdapter(
         // Fallback UI values while waiting for the API response
 
         holder.itemName.text = item.productName
-        holder.itemCount.text = item.quantity.toString()
+        holder.itemCount.text = "Quantity: " + item.quantity.toString()
         holder.itemPrice.text = String.format("$%.2f", item.price)
     }
     override fun getItemCount() = orderList.size

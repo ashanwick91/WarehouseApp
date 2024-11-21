@@ -27,6 +27,7 @@ class CustomerActivity : AppCompatActivity() {
 
         // Load the default fragment
         loadFragment(CustomerHomeFragment())
+      //  clearOrderPreferences()
 /*
         binding.customerBtnLogout.setOnClickListener {
             // Clear the JWT token from SharedPreferences

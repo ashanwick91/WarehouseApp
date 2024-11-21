@@ -68,11 +68,6 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
 
         // On clicking the cart icon, create an Order and add OrderItems to it
         cartIcon.setOnClickListener {
-            if (cartItems.isEmpty()) {
-                Toast.makeText(requireContext(), "No items in cart", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
             val orderTotal = cartItems.sumOf { it.price * it.quantity }
             val order = OrderRequest(
                 customerId = "",
@@ -88,7 +83,6 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
             val intent = Intent(requireContext(), CustomerCartActivity::class.java)
             startActivity(intent)
         }
-
         return view
     }
 
@@ -177,6 +171,7 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
             editor.putString("item_${index}_category", item.category)
             editor.putFloat("item_${index}_sales_amount", item.salesAmount.toFloat())
             editor.putInt("item_${index}_quantity_sold", item.quantitySold)
+            editor.putInt("item_${index}_image_url", item.quantitySold)
             editor.putString(
                 "item_${index}_transaction_date",
                 transactionDate.toString()

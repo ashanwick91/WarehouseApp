@@ -8,7 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.warehouseapp.OnProductItemClickListener
 import com.example.warehouseapp.R
+import com.example.warehouseapp.databinding.ItemProductAdminBinding
+import com.example.warehouseapp.databinding.ProductItemBinding
 import com.example.warehouseapp.model.Product
+import com.example.warehouseapp.util.loadImageFromFirebase
 import com.squareup.picasso.Picasso
 
 class ProductAdapter(
@@ -30,19 +33,21 @@ class ProductAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.product_item, parent, false)
-        return ProductViewHolder(view)
+        val binding =
+            ProductItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ProductViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val item = productList[position]
         holder.productName.text = item.name
-        holder.productPrice.text = item.price.toString()
-        holder.productCategory.text = item.category
+        holder.productPrice.text =String.format("Price: ${item.category}")
+        holder.productCategory.text = String.format("Category: ${item.category}")
+        holder.productDescripion.text = String.format("Description: ${item.description}")
 
         Picasso.get()
             .load(item.imageUrl)
-            .placeholder(R.drawable.sample_shoe_image)
+            .placeholder(R.drawable.loading)
             .into(holder.productImage)
 
         var quantity = item.cartQuantity
@@ -76,18 +81,21 @@ class ProductAdapter(
                 listener.onRemoveFromCartClick(item.id!!) // Remove from cart if quantity reaches zero
             }
         }
+        item.imageUrl?.let { loadImageFromFirebase(it, holder.productImage) }
         holder.quantityText.text = quantity.toString()
 
     }
     override fun getItemCount() = productList.size
 
-    inner class ProductViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val productName: TextView = view.findViewById(R.id.textViewProductName)
-        val productPrice: TextView = view.findViewById(R.id.textViewPrice)
-        val productCategory: TextView = view.findViewById(R.id.textViewCategory)
-        val productImage: ImageView = view.findViewById(R.id.imageViewProduct)
-        val quantityText: TextView = view.findViewById(R.id.textViewItemCount)
-        val plusButton: ImageView = view.findViewById(R.id.imageViewPlus)
-        val minusButton: ImageView = view.findViewById(R.id.imageViewMinus)
+    inner class ProductViewHolder(private val binding: ProductItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        val productName: TextView = binding.textViewProductName
+        val productPrice: TextView = binding.textViewPrice
+        val productCategory: TextView = binding.textViewCategory
+        val productImage: ImageView = binding.imageViewProduct
+        val quantityText: TextView = binding.textViewItemCount
+        val plusButton: ImageView = binding.imageViewPlus
+        val minusButton: ImageView = binding.imageViewMinus
+        var productDescripion: TextView = binding.descriptionCustomer
+
     }
 }

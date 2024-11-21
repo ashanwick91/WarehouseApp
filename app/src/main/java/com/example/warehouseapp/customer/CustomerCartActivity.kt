@@ -242,7 +242,7 @@ class CustomerCartActivity : AppCompatActivity() {
 
     private fun setupRecyclerView(order: OrderRequest) {
         recyclerView = findViewById(R.id.cart_items_recycler_view)
-        adapter = CartItemAdapter(this, order) { updatedOrder ->
+        adapter = CartItemAdapter(this ,  order, apiService) { updatedOrder ->
             updateTotalPrice(updatedOrder)
         }
         recyclerView.layoutManager = LinearLayoutManager(this)

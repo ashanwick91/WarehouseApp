@@ -33,7 +33,7 @@ class LoginActivity : AppCompatActivity() {
         val view = binding.root
 
         setContentView(view)
-
+        clearOrderPreferences()
         val baseUrl = readBaseUrl(this)
         apiService = RetrofitClient.getRetrofitInstance(baseUrl).create(ApiService::class.java)
 
@@ -133,4 +133,12 @@ class LoginActivity : AppCompatActivity() {
         editor.putString("jwt_token", token)
         editor.apply()
     }
+
+    private fun clearOrderPreferences() {
+        val sharedPref = getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.clear()
+        editor.apply()
+    }
+
 }
