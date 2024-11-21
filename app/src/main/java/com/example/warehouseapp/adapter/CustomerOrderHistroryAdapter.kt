@@ -20,11 +20,11 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class CustomerOrderHistroryAdapter(
-    private var orderList: List<OrderItem>,
+    private var orderList: List<ItemDetails>,
     private val apiService: ApiService
     ) : RecyclerView.Adapter<CustomerOrderHistroryAdapter.CustomerOrderHistroryViewHolder>(){
 
-    fun updateOrderList(newOrder: List<OrderItem>) {
+    fun updateOrderList(newOrder: List<ItemDetails>) {
         orderList = newOrder
         notifyDataSetChanged()
     }

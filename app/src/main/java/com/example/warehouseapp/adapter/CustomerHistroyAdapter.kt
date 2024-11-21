@@ -34,15 +34,12 @@ class CustomerHistroyAdapter(
 
     override fun onBindViewHolder(holder: CustomerHistroyViewHolder, position: Int) {
         val item = orderList[position]
-        // Parse the date if it's a string
-        val offsetDateTime = OffsetDateTime.parse(item.orderDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        val date = Date.from(offsetDateTime.toInstant())
+//
+//        // Format the orderDate using SimpleDateFormat
+//        val dateFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+//        val formattedDate = dateFormatter.format(item.orderDate)
 
-        // Format the date
-        val dateFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        val formattedDate = dateFormatter.format(date)
-
-        holder.orderDate.text = formattedDate
+        holder.orderDate.text = item.orderDate.toString()
 
         holder.orderStatus.text = item.status
 

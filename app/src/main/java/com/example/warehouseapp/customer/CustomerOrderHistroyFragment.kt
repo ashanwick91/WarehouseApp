@@ -19,11 +19,14 @@ import com.example.warehouseapp.adapter.CustomerOrderHistroryAdapter
 import com.example.warehouseapp.api.ApiService
 import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.databinding.FragmentCustomerOrderHistroyBinding
+import com.example.warehouseapp.model.ItemDetails
 import com.example.warehouseapp.model.Order
 import com.example.warehouseapp.model.OrderDetails
 import com.example.warehouseapp.model.OrderItemRequest
 import com.example.warehouseapp.model.OrderRequest
+import com.example.warehouseapp.model.OrdersResponse
 import com.example.warehouseapp.util.readBaseUrl
+import okhttp3.internal.wait
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -79,14 +82,9 @@ class CustomerOrderHistroyFragment : Fragment() {
         orderDate = binding.orderDateValue
         backImageView = binding.backButton
         carticon = binding.cartIcon
-        val offsetDateTime = OffsetDateTime.parse(orderDateX, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        val date = Date.from(offsetDateTime.toInstant())
 
-        // Format the date
-        val dateFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        val formattedDate = dateFormatter.format(date)
         orderTotal.setText("$" + orderTotalX)
-        orderDate.setText(formattedDate)
+        orderDate.setText(orderDateX)
         if (orderId != null) {
             fetchOrderDetails(orderId)
         }
@@ -111,23 +109,19 @@ class CustomerOrderHistroyFragment : Fragment() {
     }
 
     private fun fetchOrderDetails(orderId: String) {
-        println("Order ID22222: $orderId")
-        apiService.getOrdersByOrderID(orderId).enqueue(object : Callback<Order> {
-            override fun onResponse(call: Call<Order>, response: Response<Order>) {
+        apiService.getOrdersByOrderID(orderId).enqueue(object : Callback<OrderDetails> {
+            override fun onResponse(call: Call<OrderDetails>, response: Response<OrderDetails>) {
                 Log.d("fetchAllOrderHistory1", "Response Code: ${response.code()}")
                 Log.d("fetchAllOrderHistory1", "Response Body: ${response.body()}")
 
                 if (response.isSuccessful && response.body() != null) {
                     val orderDetails = response.body()
-
                     val itemDetailsList = orderDetails?.items // Use emptyList if items is null
-
-                    Log.d("fetchOrderDetails", "ItemDetails: $itemDetailsList")
 
                     // Check if fragment is still added before updating the adapter
                     if (isAdded) {
                         if (itemDetailsList != null) {
-                            customerOrderHistroy.updateOrderList(itemDetailsList)
+                        customerOrderHistroy.updateOrderList(itemDetailsList)
                         } // Pass the list of items to the adapter
                     }
                 } else {
@@ -137,9 +131,8 @@ class CustomerOrderHistroyFragment : Fragment() {
                 }
             }
 
-            override fun onFailure(call: Call<Order>, t: Throwable) {
+            override fun onFailure(call: Call<OrderDetails>, t: Throwable) {
                 Log.e("CustomerHomeFragment", "Error fetching orders", t)
-
                 // Use a safe context to avoid crashes
                 if (isAdded) {
                     Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()

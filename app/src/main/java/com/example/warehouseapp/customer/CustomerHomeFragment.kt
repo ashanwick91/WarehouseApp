@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
+import java.util.Date
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.auth0.android.jwt.JWT
@@ -28,6 +29,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 
@@ -68,14 +70,19 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
 
         // On clicking the cart icon, create an Order and add OrderItems to it
         cartIcon.setOnClickListener {
+            if (cartItems.isEmpty()) {
+                Toast.makeText(requireContext(), "No items in cart", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val orderTotal = cartItems.sumOf { it.price * it.quantity }
             val order = OrderRequest(
                 customerId = "",
                 items = cartItems.toList(),
                 orderTotal = orderTotal,
-                orderDate = OffsetDateTime.now(),
+                orderDate = Date(),
                 status = "Pending",
-                createdAt = OffsetDateTime.now()
+                createdAt = Date()
             )
 
             saveOrderToPreferences(order)
@@ -128,12 +135,17 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
                 salesAmount = product.price * quantity,
                 profitAmount = 0.0,
                 quantitySold = quantity,
-                transactionDate = OffsetDateTime.now(),
+                transactionDate = Date(),
                 price = product.price,
                 quantity = quantity
             )
             cartItems.add(orderItem)
             updateOrderTotal(orderItem.salesAmount)
+            val sharedPref =  requireContext().getSharedPreferences("cart_prefs", Context.MODE_PRIVATE)
+            val editor = sharedPref.edit()
+            editor.putBoolean("cart_has_values", true)
+            editor.apply()
+
         }
 
         productAdapter.notifyDataSetChanged()
@@ -208,7 +220,7 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
                         quantitySold = quantitySold,
                         price = price,
                         quantity = quantity,
-                        transactionDate = transactionDate ?: OffsetDateTime.now().toString()
+                        transactionDate = Date()
                     )
                 )
             }
@@ -221,9 +233,9 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
             customerId = customerId,
             items = orderItems,
             orderTotal = orderTotal,
-            orderDate = OffsetDateTime.now().toString(),
+            orderDate = Date(),
             status = "Pending",
-            createdAt = OffsetDateTime.now().toString()
+            createdAt = Date()
         )
 
         // Sync with the cart items
