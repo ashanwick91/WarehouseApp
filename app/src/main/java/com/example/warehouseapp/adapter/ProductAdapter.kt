@@ -1,10 +1,12 @@
 package com.example.warehouseapp.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.warehouseapp.OnProductItemClickListener
 import com.example.warehouseapp.R
@@ -12,6 +14,7 @@ import com.example.warehouseapp.databinding.ItemProductAdminBinding
 import com.example.warehouseapp.databinding.ProductItemBinding
 import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.util.loadImageFromFirebase
+import com.google.android.material.snackbar.Snackbar
 import com.squareup.picasso.Picasso
 
 class ProductAdapter(
@@ -69,16 +72,20 @@ class ProductAdapter(
 
         // Decrement quantity on minus button click
         holder.minusButton.setOnClickListener {
-            if (quantity > 1) {
-                quantity--
-                holder.quantityText.text = quantity.toString()
-                item.cartQuantity = quantity
-                listener.onAddToCartClick(item, -1)
-            } else if (quantity == 1) {
-                quantity = 0
-                holder.quantityText.text = quantity.toString()
-                item.cartQuantity = quantity
-                listener.onRemoveFromCartClick(item.id!!) // Remove from cart if quantity reaches zero
+            if (quantity < item.quantity) {
+                if (quantity >= 1) { // Check if item is already in cart
+                    quantity++
+                    holder.quantityText.text = quantity.toString()
+                    item.cartQuantity = quantity
+                    listener.onAddToCartClick(item, 1) // Just update quantity without adding a new item
+                } else {
+                    // If not in the cart, add it with quantity 1
+                    listener.onAddToCartClick(item, 1)
+                    item.cartQuantity = 1
+                    holder.quantityText.text = item.cartQuantity.toString()
+                }
+            }else{
+                listener.onShowMessage("Not enough stock available")
             }
         }
         item.imageUrl?.let { loadImageFromFirebase(it, holder.productImage) }
@@ -98,4 +105,5 @@ class ProductAdapter(
         var productDescripion: TextView = binding.descriptionCustomer
 
     }
+
 }

@@ -23,6 +23,7 @@ import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.OrderItemRequest
 import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.util.readBaseUrl
+import com.google.android.material.snackbar.Snackbar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -240,6 +241,10 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
             cartItems.remove(existingItem)
         }
         Toast.makeText(requireContext(), "Item removed from cart", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onShowMessage(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 
 

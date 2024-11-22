@@ -3,6 +3,8 @@ package com.example.warehouseapp.admin
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +13,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,6 +35,13 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.Calendar
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.graphics.Color
+import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.example.warehouseapp.model.Product
 
 class AdminHomeFragment : Fragment() {
 
@@ -42,6 +52,7 @@ class AdminHomeFragment : Fragment() {
     private lateinit var spinnerFilterMonth: Spinner
     private lateinit var spinnerFilterYear: Spinner
     private lateinit var spinnerFilterType: Spinner
+    private lateinit var apiService: ApiService
 
     private var selectedFilterMonth: String? = null
     private var selectedFilterDate: String? = null
@@ -64,12 +75,32 @@ class AdminHomeFragment : Fragment() {
         // Initialize adapter with an empty list and set it on RecyclerView
         salesDataAdapter = SalesDataAdapter(emptyList())
         rvSalesData.adapter = salesDataAdapter
+        val baseUrl = readBaseUrl(requireContext())
+        apiService = RetrofitClient.getRetrofitInstance(baseUrl).create(ApiService::class.java)
 
         // Set up Spinner for selecting filter type (This Month, Daily, Monthly)
         val filterTypes = arrayOf("This Month", "Daily", "Monthly")
         val filterTypeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, filterTypes)
         filterTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerFilterType.adapter = filterTypeAdapter
+
+        // Request notification permission for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    101
+                )
+            } else {
+                checkProductStock()
+            }
+        } else {
+            checkProductStock()
+        }
 
         // Handle filter type selection changes
         spinnerFilterType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -218,5 +249,92 @@ class AdminHomeFragment : Fragment() {
 
         pieChart.data = pieData
         pieChart.invalidate()
+    }
+
+    private fun checkProductStock() {
+        apiService.getProducts().enqueue(object : Callback<List<Product>> {
+            override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val products = response.body()!!
+
+                    products.forEach { product ->
+                        // Check if the product quantity is less than 2
+                        if (product.quantity < 10) {
+                            // Log the product or take action
+                            Log.w("LowStockWarning", "Product '${product.name}' has low stock: ${product.quantity}")
+
+                            // Optionally send a notification
+                            sendNotification(product.name, product.quantity)
+                        }
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load products", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+
+
+            override fun onFailure(call: Call<List<Product>>, t: Throwable) {
+                Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun sendNotification(name: String, quantity: Int) {
+        val notificationManager =
+            requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        // Notification Channel for Android O and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelId = "low_stock_channel"
+            val channelName = "Low Stock Notifications"
+            val channelDescription = "Notifies when stock is low for a product"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val notificationChannel = NotificationChannel(channelId, channelName, importance).apply {
+                description = channelDescription
+                enableLights(true)
+                lightColor = Color.RED
+                enableVibration(true)
+            }
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+
+        // Intent to open the app when notification is clicked
+        val intent = Intent(requireContext(), LoginActivity::class.java) // Replace with the desired activity
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        val pendingIntent = PendingIntent.getActivity(
+            requireContext(),
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Build the notification
+        val notificationBuilder = NotificationCompat.Builder(requireContext(), "low_stock_channel")
+            .setSmallIcon(R.drawable.baseline_notifications_24) // Replace with your app's icon
+            .setContentTitle("Low Stock Alert")
+            .setContentText("Product '$name' has low stock: $quantity left!")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        // Show the notification
+        notificationManager.notify(name.hashCode(), notificationBuilder.build())
+    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == 101) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+                Toast.makeText(requireContext(), "Permission granted", Toast.LENGTH_SHORT).show()
+                checkProductStock()
+            } else {
+                // Permission denied
+                Toast.makeText(requireContext(), "Notification permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
