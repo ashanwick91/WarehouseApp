@@ -23,6 +23,7 @@ import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.OrderItemRequest
 import com.example.warehouseapp.model.Product
 import com.example.warehouseapp.util.readBaseUrl
+import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import retrofit2.Call
 import retrofit2.Callback
@@ -42,6 +43,8 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
     private lateinit var order: OrderRequest
 
     private val cartItems = mutableListOf<OrderItemRequest>()
+    private var isAscendingOrder = true
+    private val selectedCategories = mutableListOf<String>()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -63,6 +66,7 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
         productAdapter = ProductAdapter(emptyList(), this)
         productRecyclerView.adapter = productAdapter
         val cartIcon = view.findViewById<ImageView>(R.id.cart_icon)
+        setupCategoryChips()
         fetchAllProducts()
         loadOrderFromPreferences()
         productAdapter.notifyDataSetChanged()
@@ -84,6 +88,29 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
             val intent = Intent(requireContext(), CustomerCartActivity::class.java)
             startActivity(intent)
         }
+
+        binding.searchIcon.setOnClickListener{
+            val query = binding.searchInput.text.toString()
+            if (query.isNotEmpty()) {
+                searchProducts(query)
+            } else {
+                fetchAllProducts() // Show all products if the search is empty
+            }
+        }
+
+
+        binding.chipSortPrice.setOnClickListener{
+            sortProductsByPrice()
+        }
+
+
+
+        // Handle price sorting
+        binding.chipSortPrice.setOnClickListener {
+            sortProductsByPrice()
+        }
+
+
         return view
     }
 
@@ -139,11 +166,11 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
 
         productAdapter.notifyDataSetChanged()
 
-        Toast.makeText(
+       /* Toast.makeText(
             requireContext(),
             "${product.name} quantity updated to ${existingItem?.quantity ?: quantity}",
             Toast.LENGTH_SHORT
-        ).show()
+        ).show()*/
     }
 
     private fun updateOrderTotal(amountChange: Double) {
@@ -246,6 +273,101 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
     override fun onShowMessage(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
+
+    private fun searchProducts(query: String) {
+        apiService.getProducts(name = query, description = query).enqueue(object : Callback<List<Product>> {
+            override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
+                if (response.isSuccessful && response.body() != null) {
+                    productAdapter.updateProductList(response.body()!!)
+                } else {
+                    onShowMessage("No products found matching your search!")
+                }
+            }
+
+            override fun onFailure(call: Call<List<Product>>, t: Throwable) {
+                onShowMessage("Error: ${t.message}")
+            }
+        })
+    }
+
+    private fun sortProductsByPrice() {
+        val sortedProducts = if (isAscendingOrder) {
+            productAdapter.currentList.sortedBy { it.price }
+        } else {
+            productAdapter.currentList.sortedByDescending { it.price }
+        }
+        productAdapter.updateProductList(sortedProducts)
+
+        // Toggle the sort order for the next click
+        isAscendingOrder = !isAscendingOrder
+
+        // Update the arrow icon
+        updateSortArrow()
+    }
+
+    private fun updateSortArrow() {
+        val sortIcon = binding.chipSortPrice // Update with actual arrow ImageView reference
+        if (isAscendingOrder) {
+            sortIcon.setChipIconResource(R.drawable.ic_arrow_up) // Replace with your drawable
+        } else {
+            sortIcon.setChipIconResource(R.drawable.ic_arrow_down) // Replace with your drawable
+        }
+    }
+
+
+
+    private fun handleCategorySelection(category: String, isSelected: Boolean) {
+        if (isSelected) {
+            if (!selectedCategories.contains(category)) {
+                selectedCategories.add(category)
+            }
+        } else {
+            selectedCategories.remove(category)
+        }
+        Log.d("CustomerHomeFragment", "Selected categories: $selectedCategories")
+        fetchFilteredProducts()
+    }
+
+    private fun fetchFilteredProducts() {
+        if (selectedCategories.isEmpty()) {
+            fetchAllProducts()
+            return
+        }
+
+        val selectedCategoriesString = selectedCategories.joinToString(",")
+        apiService.getProducts(category = selectedCategoriesString).enqueue(object : Callback<List<Product>> {
+            override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val products = response.body()!!
+                    Log.d("CustomerHomeFragment", "Filtered Products: $products")
+
+                    productAdapter.updateProductList(products) // Update the adapter with the new products
+                    Log.d("CustomerHomeFragment", "ProductAdapter updated with ${products.size} products")
+                } else {
+                    Toast.makeText(requireContext(), "No products found", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<List<Product>>, t: Throwable) {
+                Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun setupCategoryChips() {
+        binding.chipBoots.setOnCheckedChangeListener { _, isChecked ->
+            handleCategorySelection("Boots", isChecked)
+        }
+        binding.chipCasual.setOnCheckedChangeListener { _, isChecked ->
+            handleCategorySelection("Casual", isChecked)
+        }
+        binding.chipSports.setOnCheckedChangeListener { _, isChecked ->
+            handleCategorySelection("Sports", isChecked)
+        }
+    }
+
+
+
 
 
 }

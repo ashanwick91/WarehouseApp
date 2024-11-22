@@ -22,6 +22,9 @@ class ProductAdapter(
     private val listener: OnProductItemClickListener
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>(){
 
+    val currentList: List<Product>
+        get() = productList
+
     fun updateProductList(newProduct: List<Product>) {
         productList = newProduct
         notifyDataSetChanged()
@@ -44,7 +47,7 @@ class ProductAdapter(
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val item = productList[position]
         holder.productName.text = item.name
-        holder.productPrice.text =String.format("Price: ${item.category}")
+        holder.productPrice.text =String.format("Price: ${item.price}")
         holder.productCategory.text = String.format("Category: ${item.category}")
         holder.productDescripion.text = String.format("Description: ${item.description}")
 
