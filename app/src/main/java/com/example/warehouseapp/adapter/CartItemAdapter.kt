@@ -55,8 +55,13 @@ class CartItemAdapter(
             binding.btnDecrease.setOnClickListener {
                 if (item.quantity > 1) {
                     updateQuantity(item, item.quantity - 1)
+                } else if (item.quantity == 1) {
+                    saveItemToPreferences(item, cart.items.indexOf(item))
+                    binding.itemQuantity.text = item.quantity.toString()
+
                 }
             }
+
 
             // Increase quantity
             binding.btnIncrease.setOnClickListener {

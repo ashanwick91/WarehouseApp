@@ -60,35 +60,23 @@ class ProductAdapter(
 
 
         holder.plusButton.setOnClickListener {
-            if (quantity >= 1) { // Check if item is already in cart
-                quantity++
-                holder.quantityText.text = quantity.toString()
-                item.cartQuantity = quantity
-                listener.onAddToCartClick(item, 1) // Just update quantity without adding a new item
-            } else {
-                // If not in the cart, add it with quantity 1
-                listener.onAddToCartClick(item, 1)
-                item.cartQuantity = 1
-                holder.quantityText.text = item.cartQuantity.toString()
-            }
+            quantity++
+            holder.quantityText.text = quantity.toString()
+            item.cartQuantity = quantity
+            listener.onAddToCartClick(item, 1) // Update quantity and save to SharedPreferences
         }
 
-        // Decrement quantity on minus button click
         holder.minusButton.setOnClickListener {
-            if (quantity < item.quantity) {
-                if (quantity >= 1) { // Check if item is already in cart
-                    quantity++
-                    holder.quantityText.text = quantity.toString()
-                    item.cartQuantity = quantity
-                    listener.onAddToCartClick(item, 1) // Just update quantity without adding a new item
-                } else {
-                    // If not in the cart, add it with quantity 1
-                    listener.onAddToCartClick(item, 1)
-                    item.cartQuantity = 1
-                    holder.quantityText.text = item.cartQuantity.toString()
-                }
-            }else{
-                listener.onShowMessage("Not enough stock available")
+            if (quantity > 1) {
+                quantity--
+                holder.quantityText.text = quantity.toString()
+                item.cartQuantity = quantity
+                listener.onAddToCartClick(item, -1) // Update quantity and save to SharedPreferences
+            } else if (quantity == 1) {
+                quantity = 0
+                holder.quantityText.text = quantity.toString()
+                item.cartQuantity = quantity
+                listener.onRemoveFromCartClick(item.id!!)
             }
         }
         item.imageUrl?.let { loadImageFromFirebase(it, holder.productImage) }

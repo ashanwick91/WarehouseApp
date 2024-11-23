@@ -35,6 +35,7 @@ import java.util.Locale
 
 
 class CustomerCartActivity : AppCompatActivity() {
+    private var _binding: ActivityCustomerCartBinding? = null
     private lateinit var cartTotalTextView: TextView
     private lateinit var totalTaxTextView: TextView
     private lateinit var totalAmountTextView: TextView
@@ -254,7 +255,7 @@ class CustomerCartActivity : AppCompatActivity() {
     private fun setupLeftSwipeToDelete() {
         val deleteIcon: Drawable? = ContextCompat.getDrawable(this, R.drawable.baseline_delete_24)
         val iconMargin = resources.getDimension(R.dimen.icon_margin).toInt()
-        val backgroundColor = ContextCompat.getColor(this, R.color.swipe_background_gray) // Define a red color in colors.xml
+        val backgroundColor = ContextCompat.getColor(this, R.color.swipe_background_gray)
 
         val swipeHandler = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
@@ -265,17 +266,20 @@ class CustomerCartActivity : AppCompatActivity() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                val updatedItems = order.items.toMutableList()
-                updatedItems.removeAt(position)
 
-                val updatedOrder = order.copy(items = updatedItems)
+                // Remove the item from the cart and SharedPreferences
+                val removedItem = order.items[position]
+                order.items = order.items.toMutableList().apply { removeAt(position) }
+
+                // Update the adapter
                 adapter.notifyItemRemoved(position)
-                updateTotalPrice(updatedOrder)
-                Snackbar.make(recyclerView, "${order.items[position].productName} removed", Snackbar.LENGTH_LONG).setAction("Undo") {
-                    updatedItems.add(position, order.items[position])
-                    adapter.notifyItemInserted(position)
-                    updateTotalPrice(updatedOrder)
-                }.show()
+                updateTotalPrice(order)
+
+                // Remove the item from SharedPreferences
+                removeItemFromPreferences(position)
+
+                // Show Snackbar with Undo option
+                Snackbar.make(recyclerView, "${removedItem.productName} removed from  your cart", Snackbar.LENGTH_LONG).show()
             }
 
             override fun onChildDraw(
@@ -289,38 +293,26 @@ class CustomerCartActivity : AppCompatActivity() {
             ) {
                 val itemView = viewHolder.itemView
                 val itemHeight = itemView.bottom - itemView.top
-                val cornerRadius = 40f // Adjust this for the desired roundness
 
-                // Draw red background with rounded corners
-                val backgroundPath = android.graphics.Path().apply {
-                    addRoundRect(
-                        itemView.right + dX, // Left side of the background rectangle
-                        itemView.top.toFloat(), // Top side
-                        itemView.right.toFloat(), // Right side
-                        itemView.bottom.toFloat(), // Bottom side
-                        floatArrayOf(
-                            cornerRadius, cornerRadius, // Top left radius
-                            cornerRadius, cornerRadius, // Top right radius
-                            cornerRadius, cornerRadius, // Bottom right radius
-                            cornerRadius, cornerRadius  // Bottom left radius
-                        ),
-                        android.graphics.Path.Direction.CW
-                    )
-                }
+                // Draw background
                 val backgroundPaint = android.graphics.Paint().apply {
-                    color = backgroundColor // Set to the background color defined earlier
-                    isAntiAlias = true // Smooth the edges
+                    color = backgroundColor
                 }
-                c.drawPath(backgroundPath, backgroundPaint)
+                c.drawRect(
+                    itemView.right + dX,
+                    itemView.top.toFloat(),
+                    itemView.right.toFloat(),
+                    itemView.bottom.toFloat(),
+                    backgroundPaint
+                )
 
-                // Calculate position of delete icon
+                // Draw delete icon
                 deleteIcon?.let {
                     val iconTop = itemView.top + (itemHeight - it.intrinsicHeight) / 2
                     val iconLeft = itemView.right - iconMargin - it.intrinsicWidth
                     val iconRight = itemView.right - iconMargin
                     val iconBottom = iconTop + it.intrinsicHeight
 
-                    // Draw delete icon
                     it.setBounds(iconLeft, iconTop, iconRight, iconBottom)
                     it.draw(c)
                 }
@@ -332,6 +324,7 @@ class CustomerCartActivity : AppCompatActivity() {
         val itemTouchHelper = ItemTouchHelper(swipeHandler)
         itemTouchHelper.attachToRecyclerView(recyclerView)
     }
+
 
     private fun updateTotalPrice(order: OrderRequest) {
         val total = order.items.sumOf { it.price * it.quantity }.let { value ->
@@ -373,5 +366,46 @@ class CustomerCartActivity : AppCompatActivity() {
         editor.apply()
     }
 
+    private fun removeItemFromPreferences(position: Int) {
+        val sharedPref = getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
 
+        // Remove specific item keys
+        editor.remove("item_${position}_product_id")
+        editor.remove("item_${position}_product_name")
+        editor.remove("item_${position}_category")
+        editor.remove("item_${position}_sales_amount")
+        editor.remove("item_${position}_quantity")
+        editor.remove("item_${position}_price")
+        editor.remove("item_${position}_transaction_date")
+
+        // Adjust subsequent items' keys if needed
+        for (i in position + 1 until order.items.size + 1) {
+            val productId = sharedPref.getString("item_${i}_product_id", null)
+            val productName = sharedPref.getString("item_${i}_product_name", null)
+            val category = sharedPref.getString("item_${i}_category", null)
+            val salesAmount = sharedPref.getFloat("item_${i}_sales_amount", 0.0f)
+            val quantity = sharedPref.getInt("item_${i}_quantity", 0)
+            val price = sharedPref.getFloat("item_${i}_price", 0.0f)
+            val transactionDate = sharedPref.getString("item_${i}_transaction_date", null)
+
+            if (productId != null && productName != null && category != null) {
+                editor.putString("item_${i - 1}_product_id", productId)
+                editor.putString("item_${i - 1}_product_name", productName)
+                editor.putString("item_${i - 1}_category", category)
+                editor.putFloat("item_${i - 1}_sales_amount", salesAmount)
+                editor.putInt("item_${i - 1}_quantity", quantity)
+                editor.putFloat("item_${i - 1}_price", price)
+                editor.putString("item_${i - 1}_transaction_date", transactionDate)
+            }
+        }
+
+        editor.apply()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clear the binding reference if you want to explicitly clean up resources
+        _binding = null
+    }
 }

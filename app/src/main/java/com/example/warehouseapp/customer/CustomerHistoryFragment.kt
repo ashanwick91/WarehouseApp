@@ -30,7 +30,7 @@ import retrofit2.Response
 import java.time.OffsetDateTime
 
 class CustomerHistoryFragment : Fragment(), OnCustomerOrderClickListener {
-
+    private var _binding: FragmentCustomerHistoryBinding? = null
     private lateinit var binding: FragmentCustomerHistoryBinding
     private lateinit var apiService: ApiService
     private lateinit var orderRecyclerView: RecyclerView
@@ -121,6 +121,9 @@ class CustomerHistoryFragment : Fragment(), OnCustomerOrderClickListener {
             .addToBackStack(null) // Add to back stack to allow navigation back
             .commit()
     }
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
 }

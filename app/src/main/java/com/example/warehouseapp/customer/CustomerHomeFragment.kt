@@ -75,11 +75,6 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
 
         // On clicking the cart icon, create an Order and add OrderItems to it
         cartIcon.setOnClickListener {
-            if (cartItems.isEmpty()) {
-                Toast.makeText(requireContext(), "No items in cart", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
             val orderTotal = cartItems.sumOf { it.price * it.quantity }
             val order = OrderRequest(
                 customerId = "",
@@ -279,7 +274,6 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
             updateOrderTotal(-existingItem.salesAmount)
             cartItems.remove(existingItem)
         }
-        Toast.makeText(requireContext(), "Item removed from cart", Toast.LENGTH_SHORT).show()
     }
 
     override fun onShowMessage(message: String) {

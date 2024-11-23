@@ -6,7 +6,7 @@ import java.util.Date
 
 data class OrderRequest( // MongoDB ObjectId as a string
     val customerId: String,  // ID from the Users collection
-    val items: List<OrderItemRequest>,
+    var items: List<OrderItemRequest>,
     val orderTotal: Double,
     val orderDate: Date,
     val status: String,  // Example: "Pending", "Shipped", "Delivered"
