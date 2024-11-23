@@ -3,16 +3,14 @@ package com.example.warehouseapp.customer
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.example.warehouseapp.R
 import com.example.warehouseapp.auth.LoginActivity
-import com.example.warehouseapp.databinding.FragmentAdminHomeBinding
 import com.example.warehouseapp.databinding.FragmentCustomerProfileBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
-
 
 class CustomerProfileFragment : Fragment() {
 
@@ -36,13 +34,13 @@ class CustomerProfileFragment : Fragment() {
             requireActivity().finish()
         }
 
-        binding.cardViewMyAccount.setOnClickListener{
+        binding.cardViewMyAccount.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.frame_container, CustomerEditProfileFragment())
                 .commit()
         }
 
-        binding.cardViewHistory.setOnClickListener{
+        binding.cardViewHistory.setOnClickListener {
             navigateToFragment(CustomerHistoryFragment())
             highlightBottomNavigation(R.id.bottom_history)
 
@@ -66,7 +64,8 @@ class CustomerProfileFragment : Fragment() {
     }
 
     private fun highlightBottomNavigation(itemId: Int) {
-        val bottomNavigationView = requireActivity().findViewById<BottomNavigationView>(R.id.customer_bottom_navigation)
+        val bottomNavigationView =
+            requireActivity().findViewById<BottomNavigationView>(R.id.customer_bottom_navigation)
         bottomNavigationView?.selectedItemId = itemId
     }
 

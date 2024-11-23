@@ -18,6 +18,7 @@
     <string name="bottom_home">Home</string>
     <string name="bottom_history">History</string>
     <string name="bottom_profile">Profile</string>
+    <string name="bottom_reports">Reports</string>
 
     <string-array name="roles">
         <item>Customer</item>
