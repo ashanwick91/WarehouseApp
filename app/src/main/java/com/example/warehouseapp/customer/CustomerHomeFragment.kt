@@ -20,9 +20,12 @@ import com.example.warehouseapp.adapter.ProductAdapter
 import com.example.warehouseapp.api.ApiService
 import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.databinding.FragmentCustomerHomeBinding
+import com.example.warehouseapp.model.ItemDetails
 import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.OrderItemRequest
+import com.example.warehouseapp.model.OrdersResponse
 import com.example.warehouseapp.model.Product
+import com.example.warehouseapp.util.CartPreferences
 import com.example.warehouseapp.util.readBaseUrl
 import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
@@ -42,11 +45,12 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
     private lateinit var productRecyclerView: RecyclerView
     private lateinit var productAdapter: ProductAdapter
     private var customerId: String = ""
-    private lateinit var order: OrderRequest
+    private var order: OrderRequest? = null // Changed from lateinit to nullable
 
     private val cartItems = mutableListOf<OrderItemRequest>()
     private var isAscendingOrder = true
     private val selectedCategories = mutableListOf<String>()
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -65,38 +69,22 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
 
         productRecyclerView = binding.recyclerViewProducts
         productRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        productAdapter = ProductAdapter(emptyList(), this)
+        productAdapter = ProductAdapter(emptyList(), this, requireContext())
         productRecyclerView.adapter = productAdapter
-        val cartIcon = view.findViewById<ImageView>(R.id.cart_icon)
-        setupCategoryChips()
-        fetchAllProducts()
+        // Load the order from preferences
         loadOrderFromPreferences()
-        productAdapter.notifyDataSetChanged()
-
-        // On clicking the cart icon, create an Order and add OrderItems to it
+        val cartIcon = view.findViewById<ImageView>(R.id.cart_icon)
         cartIcon.setOnClickListener {
-            if (cartItems.isEmpty()) {
-                Toast.makeText(requireContext(), "No items in cart", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val orderTotal = cartItems.sumOf { it.price * it.quantity }
-            val order = OrderRequest(
-                customerId = "",
-                items = cartItems.toList(),
-                orderTotal = orderTotal,
-                orderDate = Date(),
-                status = "Pending",
-                createdAt = Date()
-            )
-
-            saveOrderToPreferences(order)
-
             val intent = Intent(requireContext(), CustomerCartActivity::class.java)
             startActivity(intent)
         }
+        setupCategoryChips()
+        fetchAllProducts()
 
-        binding.searchIcon.setOnClickListener{
+        productAdapter.notifyDataSetChanged()
+
+
+        binding.searchIcon.setOnClickListener {
             val query = binding.searchInput.text.toString()
             if (query.isNotEmpty()) {
                 searchProducts(query)
@@ -106,10 +94,9 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
         }
 
 
-        binding.chipSortPrice.setOnClickListener{
+        binding.chipSortPrice.setOnClickListener {
             sortProductsByPrice()
         }
-
 
 
         // Handle price sorting
@@ -126,15 +113,13 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
             override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
                 if (response.isSuccessful && response.body() != null) {
                     val products = response.body()!!
-                    val order = loadOrderFromPreferences()
-
+                    syncCartWithProducts(products)
                     products.forEach { product ->
                         val matchingCartItem = order?.items?.find { it.productId == product.id }
                         if (matchingCartItem != null) {
                             product.cartQuantity = matchingCartItem.quantity
                         }
                     }
-
                     productAdapter.updateProductList(products)
                 } else {
                     Toast.makeText(requireContext(), "Failed to load products", Toast.LENGTH_SHORT)
@@ -149,139 +134,35 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
         })
     }
 
-    override fun onAddToCartClick(product: Product, quantity: Int) {
-        val existingItem = cartItems.find { it.productId == product.id }
-        if (existingItem != null) {
-            existingItem.quantity += quantity
-            existingItem.salesAmount = existingItem.price * existingItem.quantity
-        } else {
-            // Add a new item if it doesn't exist in the cart
-            val orderItem = OrderItemRequest(
-                productId = product.id!!,
-                productName = product.name,
-                category = product.category,
-                salesAmount = product.price * quantity,
-                profitAmount = 0.0,
-                quantitySold = quantity,
-                transactionDate = Date(),
-                price = product.price,
-                quantity = quantity
+    private fun loadOrderFromPreferences() {
+        // Retrieve cart items as ItemDetails from CartPreferences
+        val cartItems = CartPreferences.getCart(requireContext())
+
+        // Map cartItems (ItemDetails) to OrderItemRequest
+        val itemDetailsList = cartItems.map { cartItem ->
+            OrderItemRequest(
+                productId = cartItem.productId,
+                productName = cartItem.productName,
+                category = cartItem.category,
+                salesAmount = cartItem.price * cartItem.quantity,
+                profitAmount = 0.0, // Adjust as necessary
+                quantitySold = 0, // Default or based on business logic
+                transactionDate = Date(), // Default or derived value
+                price = cartItem.price,
+                quantity = cartItem.quantity
             )
-            cartItems.add(orderItem)
-            updateOrderTotal(orderItem.salesAmount)
-            val sharedPref =  requireContext().getSharedPreferences("cart_prefs", Context.MODE_PRIVATE)
-            val editor = sharedPref.edit()
-            editor.putBoolean("cart_has_values", true)
-            editor.apply()
-
         }
 
-        productAdapter.notifyDataSetChanged()
-
-       /* Toast.makeText(
-            requireContext(),
-            "${product.name} quantity updated to ${existingItem?.quantity ?: quantity}",
-            Toast.LENGTH_SHORT
-        ).show()*/
-    }
-
-    private fun updateOrderTotal(amountChange: Double) {
-        val sharedPref = requireContext().getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
-        val currentTotal = sharedPref.getFloat("order_total", 0.0f).toDouble()
-        val newTotal = currentTotal + amountChange
-        val editor = sharedPref.edit()
-        editor.putFloat("order_total", newTotal.toFloat())
-        editor.apply()
-
-
-    }
-
-    private fun saveOrderToPreferences(order: OrderRequest) {
-        val sharedPref = requireContext().getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putString("customer_id", customerId)
-        editor.putFloat("order_total", order.orderTotal.toFloat())
-        editor.putString("status", order.status)
-        val createdDate = OffsetDateTime.now()
-        editor.putString("created_at", createdDate.toString())
-        val transactionDate = OffsetDateTime.now()
-        order.items.forEachIndexed { index, item ->
-            editor.putString("item_${index}_product_id", item.productId)
-            editor.putString("item_${index}_product_name", item.productName)
-            editor.putString("item_${index}_category", item.category)
-            editor.putFloat("item_${index}_sales_amount", item.salesAmount.toFloat())
-            editor.putInt("item_${index}_quantity_sold", item.quantitySold)
-            editor.putInt("item_${index}_image_url", item.quantitySold)
-            editor.putString(
-                "item_${index}_transaction_date",
-                transactionDate.toString()
-            ) // Format transactionDate
-            editor.putFloat("item_${index}_price", item.price.toFloat())
-            editor.putInt("item_${index}_quantity", item.quantity)
-        }
-        editor.apply()
-    }
-
-    private fun loadOrderFromPreferences(): OrderRequest? {
-        val sharedPref = requireContext().getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
-        val orderItems = mutableListOf<OrderItemRequest>()
-        var index = 0
-
-        while (sharedPref.contains("item_${index}_product_id")) {
-            val productId = sharedPref.getString("item_${index}_product_id", null)
-            val productName = sharedPref.getString("item_${index}_product_name", null)
-            val category = sharedPref.getString("item_${index}_category", null)
-            val salesAmount = sharedPref.getFloat("item_${index}_sales_amount", 0.0f).toDouble()
-            val quantitySold = sharedPref.getInt("item_${index}_quantity_sold", 0)
-            val price = sharedPref.getFloat("item_${index}_price", 0.0f).toDouble()
-            val quantity = sharedPref.getInt("item_${index}_quantity", 0)
-            val transactionDate = sharedPref.getString("item_${index}_transaction_date", null)
-
-            if (productId != null && productName != null && category != null) {
-                orderItems.add(
-                    OrderItemRequest(
-                        productId = productId,
-                        productName = productName,
-                        category = category,
-                        salesAmount = salesAmount,
-                        profitAmount = 0.0, // Adjust if necessary
-                        quantitySold = quantitySold,
-                        price = price,
-                        quantity = quantity,
-                        transactionDate = Date()
-                    )
-                )
-            }
-            index++
-        }
-
-        // Initialize the order object
-        val orderTotal = orderItems.sumOf { it.salesAmount }
+        // Populate the `order` object
         order = OrderRequest(
             customerId = customerId,
-            items = orderItems,
-            orderTotal = orderTotal,
-            orderDate = Date(),
-            status = "Pending",
-            createdAt = Date()
+            orderDate = Date(), // Current date or derived value
+            items = itemDetailsList, // Mapped items
+            orderTotal = itemDetailsList.sumOf { it.salesAmount },
+            status = "Pending", // Default status
+            createdAt = Date() // Current timestamp
         )
-
-        // Sync with the cart items
-        cartItems.clear()
-        cartItems.addAll(orderItems)
-
-        productAdapter.notifyDataSetChanged()
-        return order
     }
-    override fun onRemoveFromCartClick(productId: String) {
-        val existingItem = cartItems.find { it.productId == productId }
-        if (existingItem != null) {
-            updateOrderTotal(-existingItem.salesAmount)
-            cartItems.remove(existingItem)
-        }
-        Toast.makeText(requireContext(), "Item removed from cart", Toast.LENGTH_SHORT).show()
-    }
-
     override fun onShowMessage(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
@@ -376,10 +257,19 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
         binding.chipSports.setOnCheckedChangeListener { _, isChecked ->
             handleCategorySelection("Sports", isChecked)
         }
+
+
     }
 
-
-
-
+    private fun syncCartWithProducts(products: List<Product>) {
+        val cartItems = CartPreferences.getCart(requireContext())
+        for (product in products) {
+            val cartItem = cartItems.find { it.productId == product.id }
+            if (cartItem != null) {
+                product.cartQuantity = cartItem.quantity
+            }
+        }
+        productAdapter.updateProductList(products)
+    }
 
 }

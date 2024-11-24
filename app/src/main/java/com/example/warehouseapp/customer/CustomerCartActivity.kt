@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -23,6 +24,7 @@ import com.example.warehouseapp.databinding.ActivityCustomerCartBinding
 import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.OrderItemRequest
 import com.example.warehouseapp.model.Product
+import com.example.warehouseapp.util.CartPreferences
 import com.example.warehouseapp.util.readBaseUrl
 import com.google.android.material.snackbar.Snackbar
 import retrofit2.Call
@@ -52,16 +54,11 @@ class CustomerCartActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityCustomerCartBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
-        cartTotalTextView = binding.subtotalAmount
-        totalTaxTextView = binding.taxAmount
-        totalAmountTextView = binding.totalAmount
-        backImageView = binding.backButton
+        setContentView(binding.root)
+        recyclerView = findViewById(R.id.cart_items_recycler_view)
+        recyclerView.layoutManager = LinearLayoutManager(this)
         checkoutButton = binding.checkoutButton
-
         // Setup Retrofit API
         val baseUrl = readBaseUrl(this)
         apiService = RetrofitClient.getRetrofitInstance(baseUrl).create(ApiService::class.java)
@@ -74,106 +71,73 @@ class CustomerCartActivity : AppCompatActivity() {
             customerId = jwt.getClaim("_id").asString() ?: ""
         }
 
-        loadOrderFromPreferences()
-        setupRecyclerView(order)
-        updateTotalPrice(order)
-        setupRecyclerView(order)
-        updateTotalPrice(order)
-        setupLeftSwipeToDelete()
-        saveOrderToPreferences(order)
 
+        adapter = CartItemAdapter(mutableListOf(), this, apiService){
+            updateCartTotal() // Update cart total whenever cart changes
+        }
+        binding.cartItemsRecyclerView.adapter = adapter
+        backImageView = binding.backButton
         backImageView.setOnClickListener {
-
-            val orderItems = mutableListOf<OrderItemRequest>()
-            val sharedPref = getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
-            var index = 0
-            while (sharedPref.contains("item_${index}_product_id")) {
-                val productId = sharedPref.getString("item_${index}_product_id", null)
-                val productName = sharedPref.getString("item_${index}_product_name", null)
-                val category = sharedPref.getString("item_${index}_category", null)
-                val salesAmount = sharedPref.getFloat("item_${index}_sales_amount", 0.0f).toDouble()
-                val quantitySold = sharedPref.getInt("item_${index}_quantity_sold", 0)
-                val price = sharedPref.getFloat("item_${index}_price", 0.0f).toDouble()
-                val quantity = sharedPref.getInt("item_${index}_quantity", 0)
-
-
-                if (productId != null && productName != null && category != null) {
-                    orderItems.add(
-                        OrderItemRequest(
-                            productId = productId,
-                            productName = productName,
-                            category = category,
-                            salesAmount = salesAmount,
-                            profitAmount = 0.0,
-                            quantitySold = quantitySold,
-                            price = price,
-                            quantity = quantity,
-                            transactionDate =Date()
-                        )
-                    )
-                }
-                index++
-            }
-
-            val order = OrderRequest(
-                customerId = customerId,
-                items = orderItems,
-                orderTotal = orderTotal,
-                status = "Pending",
-                orderDate = Date(),
-                createdAt = Date()
-            )
-
-            saveOrderToPreferences(order)
             val intent = Intent(this, CustomerActivity::class.java)
             startActivity(intent)
         }
 
         checkoutButton.setOnClickListener {
-            val orderItems = mutableListOf<OrderItemRequest>()
-            val sharedPref = getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
-            var index = 0
-            while (sharedPref.contains("item_${index}_product_id")) {
-                val productId = sharedPref.getString("item_${index}_product_id", null)
-                val productName = sharedPref.getString("item_${index}_product_name", null)
-                val category = sharedPref.getString("item_${index}_category", null)
-                val salesAmount = sharedPref.getFloat("item_${index}_sales_amount", 0.0f).toDouble()
-                val quantitySold = sharedPref.getInt("item_${index}_quantity_sold", 0)
-                val price = sharedPref.getFloat("item_${index}_price", 0.0f).toDouble()
-                val quantity = sharedPref.getInt("item_${index}_quantity", 0)
-
-                if (productId != null && productName != null && category != null) {
-                    orderItems.add(
-                        OrderItemRequest(
-                            productId = productId,
-                            productName = productName,
-                            category = category,
-                            salesAmount = salesAmount,
-                            profitAmount = 0.0,
-                            quantitySold = quantitySold,
-                            price = price,
-                            quantity = quantity,
-                            transactionDate = Date()
-                        )
-                    )
-                }
-                index++
+            // Step 1: Retrieve cart items from shared preferences
+            val cartItems =
+                CartPreferences.getCart(this) // Retrieve items as a list of `ItemDetails`
+            val orderItems = cartItems.map { cartItem ->
+                OrderItemRequest(
+                    productId = cartItem.productId,
+                    productName = cartItem.productName,
+                    category = cartItem.category,
+                    salesAmount = cartItem.price * cartItem.quantity,
+                    profitAmount = 0.0, // Adjust as necessary
+                    quantitySold = cartItem.quantity, // Assuming this is the sold quantity
+                    price = cartItem.price,
+                    quantity = cartItem.quantity,
+                    transactionDate = Date() // Add current date as the transaction date
+                )
             }
 
+            // Step 2: Create the OrderRequest object
             val order = OrderRequest(
-                customerId = customerId,
+                customerId = customerId, // Populate this with the logged-in customer's ID
                 items = orderItems,
-                orderTotal = orderTotal,
-                status = "Pending",
-                orderDate =  Date(),
-                createdAt =  Date()
+                orderTotal = orderItems.sumOf { it.salesAmount }
+                    .toBigDecimal()
+                    .setScale(2, java.math.RoundingMode.HALF_UP)
+                    .toDouble(), // Calculate total sales amount
+                status = "Pending", // Default status
+                orderDate = Date(), // Add the current date
+                createdAt = Date() // Add creation timestamp
             )
 
-            // Send OrderRequest via API
+            // Step 3: Save the order to the database using the API service
             apiService.placeOrder(order).enqueue(object : Callback<OrderRequest> {
-                override fun onResponse(call: Call<OrderRequest>, response: Response<OrderRequest>) {
+                override fun onResponse(
+                    call: Call<OrderRequest>,
+                    response: Response<OrderRequest>
+                ) {
                     if (response.isSuccessful) {
-                        response.body()?.let { onSuccess(it) }
+                        response.body()?.let {
+                            onSuccess(it)
+                        }
+                        Toast.makeText(
+                            this@CustomerCartActivity,
+                            "Order placed successfully!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // Navigate to success activity
+                        val intent = Intent(
+                            this@CustomerCartActivity,
+                            CustomerPurchaseSucessActivity::class.java
+                        )
+                        startActivity(intent)
+
+                        // Optionally clear the cart after checkout
+                        CartPreferences.saveCart(this@CustomerCartActivity, emptyList())
                     } else {
                         onError("Error: ${response.message()}")
                     }
@@ -183,99 +147,27 @@ class CustomerCartActivity : AppCompatActivity() {
                     onError(t.message ?: "Unknown error")
                 }
             })
-
-
-            val intent = Intent(this, CustomerPurchaseSucessActivity::class.java)
-            startActivity(intent)
-        }
-    }
-
-
-    private fun loadOrderFromPreferences() {
-        val sharedPref = getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
-        val status = sharedPref.getString("status", "Pending")
-        val orderItems = mutableListOf<OrderItemRequest>()
-        var index = 0
-        while (sharedPref.contains("item_${index}_product_id")) {
-            val productId = sharedPref.getString("item_${index}_product_id", null)
-            val productName = sharedPref.getString("item_${index}_product_name", null)
-            val category = sharedPref.getString("item_${index}_category", null)
-            val salesAmount = sharedPref.getFloat("item_${index}_sales_amount", 0.0f).toDouble()
-            val quantitySold = sharedPref.getInt("item_${index}_quantity_sold", 0)
-            val price = sharedPref.getFloat("item_${index}_price", 0.0f).toDouble()
-            val quantity = sharedPref.getInt("item_${index}_quantity", 0)
-
-            if (productId != null && productName != null && category != null) {
-                orderItems.add(
-                    OrderItemRequest(
-                        productId = productId,
-                        productName = productName,
-                        category = category,
-                        salesAmount = salesAmount,
-                        profitAmount = 0.0,
-                        quantitySold = quantitySold,
-                        transactionDate =  Date(),
-                        price = price,
-                        quantity = quantity
-                    )
-                )
-            }
-            index++
         }
 
-        // Initialize the order object
-        order = OrderRequest(
-            customerId = customerId,
-            items = orderItems,
-            orderTotal = orderTotal,
-            orderDate =  Date(),
-            status = status ?: "Pending",
-            createdAt =  Date()
-        )
+
+        leftSwipeDelete()
+        loadCart()
     }
 
-    private fun onSuccess(orderResponse: OrderRequest) {
-        Snackbar.make(recyclerView, "Order placed successfully!", Snackbar.LENGTH_LONG).show()
-    }
-
-    private fun onError(message: String) {
-        Snackbar.make(recyclerView, message, Snackbar.LENGTH_LONG).show()
-    }
-
-    private fun setupRecyclerView(order: OrderRequest) {
-        recyclerView = findViewById(R.id.cart_items_recycler_view)
-        adapter = CartItemAdapter(this ,  order, apiService) { updatedOrder ->
-            updateTotalPrice(updatedOrder)
-        }
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = adapter
-    }
-
-    private fun setupLeftSwipeToDelete() {
-        val deleteIcon: Drawable? = ContextCompat.getDrawable(this, R.drawable.baseline_delete_24)
-        val iconMargin = resources.getDimension(R.dimen.icon_margin).toInt()
-        val backgroundColor = ContextCompat.getColor(this, R.color.swipe_background_gray) // Define a red color in colors.xml
-
-        val swipeHandler = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    private fun leftSwipeDelete() {
+        // Add ItemTouchHelper for swipe-to-delete
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
-            ) = false
+            ): Boolean {
+                return false // No movement support
+            }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                val updatedItems = order.items.toMutableList()
-                updatedItems.removeAt(position)
-
-                val updatedOrder = order.copy(items = updatedItems)
-                adapter.notifyItemRemoved(position)
-                updateTotalPrice(updatedOrder)
-                Snackbar.make(recyclerView, "${order.items[position].productName} removed", Snackbar.LENGTH_LONG).setAction("Undo") {
-                    updatedItems.add(position, order.items[position])
-                    adapter.notifyItemInserted(position)
-                    updateTotalPrice(updatedOrder)
-                }.show()
+                deleteCartItem(position) // Remove the item from the cart
             }
 
             override fun onChildDraw(
@@ -287,91 +179,86 @@ class CustomerCartActivity : AppCompatActivity() {
                 actionState: Int,
                 isCurrentlyActive: Boolean
             ) {
+                // Add a background color and delete icon while swiping
                 val itemView = viewHolder.itemView
-                val itemHeight = itemView.bottom - itemView.top
-                val cornerRadius = 40f // Adjust this for the desired roundness
+                val background = ContextCompat.getDrawable(this@CustomerCartActivity, R.drawable.swipe_background)
+                val deleteIcon = ContextCompat.getDrawable(this@CustomerCartActivity, R.drawable.baseline_delete_24)
 
-                // Draw red background with rounded corners
-                val backgroundPath = android.graphics.Path().apply {
-                    addRoundRect(
-                        itemView.right + dX, // Left side of the background rectangle
-                        itemView.top.toFloat(), // Top side
-                        itemView.right.toFloat(), // Right side
-                        itemView.bottom.toFloat(), // Bottom side
-                        floatArrayOf(
-                            cornerRadius, cornerRadius, // Top left radius
-                            cornerRadius, cornerRadius, // Top right radius
-                            cornerRadius, cornerRadius, // Bottom right radius
-                            cornerRadius, cornerRadius  // Bottom left radius
-                        ),
-                        android.graphics.Path.Direction.CW
-                    )
-                }
-                val backgroundPaint = android.graphics.Paint().apply {
-                    color = backgroundColor // Set to the background color defined earlier
-                    isAntiAlias = true // Smooth the edges
-                }
-                c.drawPath(backgroundPath, backgroundPaint)
+                background?.setBounds(
+                    itemView.right + dX.toInt(),
+                    itemView.top,
+                    itemView.right,
+                    itemView.bottom
+                )
+                background?.draw(c)
 
-                // Calculate position of delete icon
-                deleteIcon?.let {
-                    val iconTop = itemView.top + (itemHeight - it.intrinsicHeight) / 2
-                    val iconLeft = itemView.right - iconMargin - it.intrinsicWidth
-                    val iconRight = itemView.right - iconMargin
-                    val iconBottom = iconTop + it.intrinsicHeight
-
-                    // Draw delete icon
-                    it.setBounds(iconLeft, iconTop, iconRight, iconBottom)
-                    it.draw(c)
-                }
+                val iconMargin = (itemView.height - (deleteIcon?.intrinsicHeight ?: 0)) / 2
+                deleteIcon?.setBounds(
+                    itemView.right - iconMargin - (deleteIcon.intrinsicWidth ?: 0),
+                    itemView.top + iconMargin,
+                    itemView.right - iconMargin,
+                    itemView.bottom - iconMargin
+                )
+                deleteIcon?.draw(c)
 
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
-        }
-
-        val itemTouchHelper = ItemTouchHelper(swipeHandler)
-        itemTouchHelper.attachToRecyclerView(recyclerView)
+        })
+        itemTouchHelper.attachToRecyclerView(binding.cartItemsRecyclerView)
     }
 
-    private fun updateTotalPrice(order: OrderRequest) {
-        val total = order.items.sumOf { it.price * it.quantity }.let { value ->
-            "%.2f".format(value).toDouble()
-        }
-        val tax = (total * taxRate).let { value ->
-            "%.2f".format(value).toDouble()
-        }
-        orderTotal = (total + tax).let { value ->
-            "%.2f".format(value).toDouble()
-        }
-        cartTotalTextView.text = "$${"%.2f".format(total)}"
-        totalTaxTextView.text = "$${"%.2f".format(tax)}"
-        totalAmountTextView.text = "$${"%.2f".format(orderTotal)}"
+    private fun loadCart() {
+        val cartItems = CartPreferences.getCart(this)
+        adapter.updateCartItems(cartItems)
+        updateCartTotal()
     }
 
-    private fun saveOrderToPreferences(order: OrderRequest) {
-        val sharedPref = this.getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putString("customer_id", customerId)
-        editor.putFloat("order_total", order.orderTotal.toFloat())
-        editor.putString("status", order.status)
-        val createdDate = OffsetDateTime.now()
-        editor.putString("created_at", createdDate.toString())
-        val transactionDate = OffsetDateTime.now()
-        order.items.forEachIndexed { index, item ->
-            editor.putString("item_${index}_product_id", item.productId)
-            editor.putString("item_${index}_product_name", item.productName)
-            editor.putString("item_${index}_category", item.category)
-            editor.putFloat("item_${index}_sales_amount", item.salesAmount.toFloat())
-            editor.putInt("item_${index}_quantity_sold", item.quantitySold)
-            editor.putString(
-                "item_${index}_transaction_date",
-                transactionDate.toString()
-            ) // Format transactionDate
-            editor.putFloat("item_${index}_price", item.price.toFloat())
-            editor.putInt("item_${index}_quantity", item.quantity)
-        }
-        editor.apply()
+// Success callback
+private fun onSuccess(order: OrderRequest) {
+    Log.d("Checkout", "Order placed successfully: $order")
+}
+
+// Error callback
+private fun onError(message: String) {
+    Log.e("Checkout", "Order placement failed: $message")
+    Toast.makeText(this, "Failed to place order: $message", Toast.LENGTH_SHORT).show()
+}
+    private fun updateCartTotal() {
+        val cartItems = CartPreferences.getCart(this)
+        val subtotal = cartItems.sumOf { it.quantity * it.price }
+        val tax = subtotal * 0.05
+        val total = subtotal + tax
+
+        binding.subtotalAmount.text = "$%.2f".format(subtotal)
+        binding.taxAmount.text = "$%.2f".format(tax)
+        binding.totalAmount.text = "$%.2f".format(total)
     }
 
+    private fun deleteCartItem(position: Int) {
+        val mutableCartItems = CartPreferences.getCart(this).toMutableList()
+        val removedItem = mutableCartItems.removeAt(position)
 
+        // Save the updated cart back to preferences
+        CartPreferences.saveCart(this, mutableCartItems)
+
+        // Update the adapter and total
+        adapter.updateCartItems(mutableCartItems)
+        updateCartTotal()
+
+        // Show Snackbar with Undo option
+        Snackbar.make(binding.root, "${removedItem.productName} removed from cart", Snackbar.LENGTH_LONG)
+            .setAction("UNDO") {
+                // Re-add the item when Undo is clicked
+                mutableCartItems.add(position, removedItem)
+                CartPreferences.saveCart(this, mutableCartItems)
+                adapter.updateCartItems(mutableCartItems)
+                updateCartTotal()
+            }
+            .show()
+
+        // Disable checkout if the cart is empty
+        if (mutableCartItems.isEmpty()) {
+            checkoutButton.isEnabled = false
+        }
+    }
 }

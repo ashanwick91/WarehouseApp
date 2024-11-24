@@ -11,9 +11,12 @@ import com.bumptech.glide.Glide
 import com.example.warehouseapp.R
 import com.example.warehouseapp.api.ApiService
 import com.example.warehouseapp.databinding.CustomerItemCartBinding
+import com.example.warehouseapp.model.Item
+import com.example.warehouseapp.model.ItemDetails
 import com.example.warehouseapp.model.OrderItemRequest
 import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.Product
+import com.example.warehouseapp.util.CartPreferences
 import com.example.warehouseapp.util.loadImageFromFirebase
 import com.squareup.picasso.Picasso
 import retrofit2.Call
@@ -22,104 +25,108 @@ import retrofit2.Response
 
 
 class CartItemAdapter(
+    private var cartItems: List<ItemDetails>,
     private val context: Context,
-    private var cart: OrderRequest,
-    private var apiService: ApiService,// Mutable cart to update directly
-    private val onQuantityChanged: (OrderRequest
-            ) -> Unit // Callback to notify total price updates
+    private var apiService: ApiService,
+    private val onCartUpdated: () -> Unit
 ) : RecyclerView.Adapter<CartItemAdapter.CartItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartItemViewHolder {
-        val binding =
-            CustomerItemCartBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return CartItemViewHolder(binding);
+        val binding = CustomerItemCartBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return CartItemViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: CartItemViewHolder, position: Int) {
-        val item = cart.items[position]
-        holder.bind(item)
+        val item = cartItems[position]
+        holder.binding.itemQuantity.text = item.quantity.toString()
+        holder.binding.itemName.text = item.productName
+        holder.binding.itemPrice.text = "$${item.price}"
 
-    }
+        holder.binding.btnIncrease.setOnClickListener {
+            item.quantity++
+            updateCart(item)
+            notifyItemChanged(position)
+            onCartUpdated() // Notify the activity
+        }
 
-    override fun getItemCount(): Int = cart.items.size
-
-    inner class CartItemViewHolder(private val binding:  CustomerItemCartBinding) : RecyclerView.ViewHolder(binding.root) {
-
-        fun bind(item: OrderItemRequest) {
-            binding.itemName.text = item.productName
-            binding.itemPrice.text = String.format("$%.2f", item.price)
-            binding.itemQuantity.text = item.quantity.toString()
-
-            //item.imageUrl?.let { loadImageFromFirebase(it, binding.ivProductAdmin) }
-            // Decrease quantity
-            binding.btnDecrease.setOnClickListener {
-                if (item.quantity > 1) {
-                    updateQuantity(item, item.quantity - 1)
+        holder.binding.btnDecrease.setOnClickListener {
+            if (item.quantity > 0) {
+                item.quantity--
+                updateCart(item)
+                if (item.quantity == 0) {
+                    // Convert to mutable list, remove the item, and save
+                    val mutableCartItems = cartItems.toMutableList()
+                    mutableCartItems.removeAt(position)
+                    cartItems = mutableCartItems // Update the cartItems list
+                    CartPreferences.saveCart(context, cartItems) // Save updated cart
+                    notifyItemRemoved(position)
+                    notifyItemRangeChanged(position, cartItems.size)
+                } else {
+                    notifyItemChanged(position)
                 }
+                onCartUpdated() // Notify the activity
             }
+        }
 
-            // Increase quantity
-            binding.btnIncrease.setOnClickListener {
-                updateQuantity(item, item.quantity + 1)
-            }
-
-            apiService.getProducts().enqueue(object : Callback<List<Product>> {
-                override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
-                    if (response.isSuccessful && response.body() != null) {
-                        val products = response.body()!!
-                        Log.d("productsproductsproducts", "productproducts: $products")
-                        // Filter and process only the product matching the productId
-                        val matchingProduct = products.find { it.id == item.productId }
-                        if (matchingProduct != null) {
-                            Log.e("matchingProductmatchingProduct", matchingProduct.imageUrl.toString())
-                        }
-                        if (matchingProduct != null) {
-                            Glide.with(binding.itemImage.context)
-                                .load(matchingProduct.imageUrl?.let { loadImageFromFirebase(it, binding.itemImage) }) // The URL of the image
-                                .placeholder(R.drawable.placeholder_image) // Optional placeholder
-                                .error(R.drawable.loading) // Optional error image
-                                .into(binding.itemImage) // Target ImageView
-
-                        } else {
-                            Log.e("CustomerOrderHistrory", "Product not found for ID: ${item.productId}")
-                        }
-                    } else {
-                        Log.e("CustomerOrderHistrory", "Failed to fetch products: ${response.code()}")
+        apiService.getProducts().enqueue(object : Callback<List<Product>> {
+            override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val products = response.body()!!
+                    Log.d("productsproductsproducts", "productproducts: $products")
+                    // Filter and process only the product matching the productId
+                    val matchingProduct = products.find { it.id == item.productId }
+                    if (matchingProduct != null) {
+                        Log.e("matchingProductmatchingProduct", matchingProduct.imageUrl.toString())
                     }
-                }
+                    if (matchingProduct != null) {
+                        Glide.with(holder.binding.itemImage.context)
+                            .load(matchingProduct.imageUrl?.let { loadImageFromFirebase(it, holder.binding.itemImage) }) // The URL of the image
+                            .placeholder(R.drawable.placeholder_image) // Optional placeholder
+                            .error(R.drawable.loading) // Optional error image
+                            .into(holder.binding.itemImage) // Target ImageView
 
-                override fun onFailure(call: Call<List<Product>>, t: Throwable) {
-                    Log.e("CustomerOrderHistrory", "Error fetching products", t)
+                    } else {
+                        Log.e("CustomerOrderHistrory", "Product not found for ID: ${item.productId}")
+                    }
+                } else {
+                    Log.e("CustomerOrderHistrory", "Failed to fetch products: ${response.code()}")
                 }
-            })
-        }
+            }
 
-        private fun updateQuantity(item: OrderItemRequest, newQuantity: Int) {
-            val itemIndex = cart.items.indexOfFirst { it.productId == item.productId }
-            if (itemIndex != -1) {
-                val updatedItem = item.copy(quantity = newQuantity)
-                val updatedItems = cart.items.toMutableList()
-                updatedItems[itemIndex] = updatedItem
-                // Save the updated cart item to SharedPreferences
-                saveItemToPreferences(updatedItem, itemIndex)
-                cart = cart.copy(items = updatedItems)
-                onQuantityChanged(cart)
-                binding.itemQuantity.text = newQuantity.toString()
-                notifyItemChanged(adapterPosition)
+            override fun onFailure(call: Call<List<Product>>, t: Throwable) {
+                Log.e("CustomerOrderHistrory", "Error fetching products", t)
+            }
+        })
+    }
+
+    override fun getItemCount(): Int = cartItems.size
+
+    fun updateCartItems(newCartItems: List<ItemDetails>) {
+        this.cartItems = newCartItems
+        notifyDataSetChanged()
+    }
+
+    private fun updateCart(orderItem: ItemDetails) {
+        val cartItems = CartPreferences.getCart(context).toMutableList()
+        val index = cartItems.indexOfFirst { it.productId == orderItem.productId }
+
+        if (index != -1) {
+            if (orderItem.quantity > 0) {
+                cartItems[index].quantity = orderItem.quantity
+            } else {
+                cartItems.removeAt(index)
+            }
+        } else {
+            if (orderItem.quantity > 0) {
+                cartItems.add(orderItem)
             }
         }
-        private fun saveItemToPreferences(item: OrderItemRequest, index: Int) {
-            val sharedPref = context.getSharedPreferences("order_prefs", Context.MODE_PRIVATE)
-            val editor = sharedPref.edit()
-            editor.putString("item_${index}_product_id", item.productId)
-            editor.putString("item_${index}_product_name", item.productName)
-            editor.putString("item_${index}_category", item.category)
-            editor.putFloat("item_${index}_sales_amount", item.salesAmount.toFloat())
-            editor.putInt("item_${index}_quantity", item.quantity)
-            editor.putFloat("item_${index}_price", item.price.toFloat())
-            editor.putString("item_${index}_transaction_date", item.transactionDate.toString())
-            editor.apply()
-        }
 
+        CartPreferences.saveCart(context, cartItems)
     }
+
+    inner class CartItemViewHolder(val binding: CustomerItemCartBinding) :
+        RecyclerView.ViewHolder(binding.root)
 }

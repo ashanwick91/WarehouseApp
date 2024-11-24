@@ -2,24 +2,25 @@ package com.example.warehouseapp.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.warehouseapp.OnProductItemClickListener
 import com.example.warehouseapp.R
-import com.example.warehouseapp.databinding.ItemProductAdminBinding
 import com.example.warehouseapp.databinding.ProductItemBinding
+import com.example.warehouseapp.model.ItemDetails
+import com.example.warehouseapp.model.OrderItemRequest
 import com.example.warehouseapp.model.Product
+import com.example.warehouseapp.util.CartPreferences
 import com.example.warehouseapp.util.loadImageFromFirebase
-import com.google.android.material.snackbar.Snackbar
 import com.squareup.picasso.Picasso
+import java.util.Date
 
 class ProductAdapter(
     private var productList: List<Product>,
-    private val listener: OnProductItemClickListener
+    private val listener: OnProductItemClickListener,
+    private val context: Context
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>(){
 
     val currentList: List<Product>
@@ -60,35 +61,16 @@ class ProductAdapter(
 
 
         holder.plusButton.setOnClickListener {
-            if (quantity >= 1) { // Check if item is already in cart
-                quantity++
-                holder.quantityText.text = quantity.toString()
-                item.cartQuantity = quantity
-                listener.onAddToCartClick(item, 1) // Just update quantity without adding a new item
-            } else {
-                // If not in the cart, add it with quantity 1
-                listener.onAddToCartClick(item, 1)
-                item.cartQuantity = 1
-                holder.quantityText.text = item.cartQuantity.toString()
-            }
+            item.cartQuantity++
+            holder.quantityText.text = item.cartQuantity.toString()
+            updateCart(item)
         }
 
-        // Decrement quantity on minus button click
         holder.minusButton.setOnClickListener {
-            if (quantity < item.quantity) {
-                if (quantity >= 1) { // Check if item is already in cart
-                    quantity++
-                    holder.quantityText.text = quantity.toString()
-                    item.cartQuantity = quantity
-                    listener.onAddToCartClick(item, 1) // Just update quantity without adding a new item
-                } else {
-                    // If not in the cart, add it with quantity 1
-                    listener.onAddToCartClick(item, 1)
-                    item.cartQuantity = 1
-                    holder.quantityText.text = item.cartQuantity.toString()
-                }
-            }else{
-                listener.onShowMessage("Not enough stock available")
+            if (item.cartQuantity > 0) {
+                item.cartQuantity--
+                holder.quantityText.text = item.cartQuantity.toString()
+                updateCart(item)
             }
         }
         item.imageUrl?.let { loadImageFromFirebase(it, holder.productImage) }
@@ -107,6 +89,36 @@ class ProductAdapter(
         val minusButton: ImageView = binding.imageViewMinus
         var productDescripion: TextView = binding.descriptionCustomer
 
+    }
+
+    private fun updateCart(product: Product) {
+        val cartItems = CartPreferences.getCart(context).toMutableList()
+        val index = cartItems.indexOfFirst { it.productId == product.id }
+
+        if (index != -1) {
+            if (product.cartQuantity > 0) {
+                cartItems[index].quantity = product.cartQuantity
+            } else {
+                cartItems.removeAt(index)
+            }
+        } else {
+            if (product.cartQuantity > 0) {
+                cartItems.add(
+                    ItemDetails(
+                        productId = product.id.toString(),
+                        productName = product.name,
+                        category = product.category,
+                        salesAmount = 0.0,
+                        quantitySold = 0, // Adjust this if you track sold quantities
+                        transactionDate = Date().toString(),
+                        price = product.price,
+                        quantity = product.cartQuantity,
+                    )
+                )
+            }
+        }
+
+        CartPreferences.saveCart(context, cartItems)
     }
 
 }
