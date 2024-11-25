@@ -45,4 +45,5 @@
     <string name="customers">View Customers</string>
     <string name="access_requests">Access Requests</string>
     <string name="profile">Update Profile</string>
+    <string name="approve">Approve</string>
 </resources>
