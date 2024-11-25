@@ -8,7 +8,7 @@ data class User(
     val email: String,
     val passwordHash: String,  // Hashed password for security
     val role: String,  // Either "admin" or "customer"
-    val profile: Profile,
+    val profile: Profile?,
     val createdAt: Date,
     val updatedAt: Date
 )

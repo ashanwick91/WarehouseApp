@@ -41,4 +41,8 @@
     <string name="quantity">Quantity</string>
     <string name="clear">Clear</string>
     <string name="category_name">Category Name</string>
+    <string name="activity_log">Activity Log</string>
+    <string name="customers">View Customers</string>
+    <string name="access_requests">Access Requests</string>
+    <string name="profile">Update Profile</string>
 </resources>
