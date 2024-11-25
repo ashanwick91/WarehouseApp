@@ -1,16 +1,15 @@
 package com.example.warehouseapp.model
 
-import java.util.Date
+import java.time.OffsetDateTime
 
 data class User(
     val id: String,  // MongoDB ObjectId as a string
-    val username: String,
     val email: String,
-    val passwordHash: String,  // Hashed password for security
     val role: String,  // Either "admin" or "customer"
+    val isApproved: Boolean,
     val profile: Profile?,
-    val createdAt: Date,
-    val updatedAt: Date
+    val createdAt: OffsetDateTime?,
+    val updatedAt: OffsetDateTime?
 )
 
 data class Profile(

@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.auth0.android.jwt.JWT
+import com.example.warehouseapp.R
 import com.example.warehouseapp.api.ApiService
 import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.auth.LoginActivity
@@ -39,6 +40,13 @@ class AdminProfileFragment : Fragment() {
             val jwt = JWT(token)
             val userId = jwt.getClaim("_id").asString() ?: ""
             fetchUser(userId, token)
+        }
+
+        binding.cvAccessRequests.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frame_container, AccessRequestsFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
         binding.adminBtnLogout.setOnClickListener {

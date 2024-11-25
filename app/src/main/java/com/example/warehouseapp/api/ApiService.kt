@@ -3,7 +3,6 @@ package com.example.warehouseapp.api
 import com.example.warehouseapp.model.FinancialReport
 import com.example.warehouseapp.model.LoginRequest
 import com.example.warehouseapp.model.LoginResponse
-import com.example.warehouseapp.model.Order
 import com.example.warehouseapp.model.OrderDetails
 import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.OrdersResponse
@@ -87,6 +86,12 @@ interface ApiService {
         @Path("order_id") orderId: String
     ): Call<OrderDetails>
 
+    @GET("/users")
+    fun getUsers(
+        @Query("role") role: String,
+        @Header("Authorization") token: String
+    ): Call<List<User>>
+
     @GET("/users/{id}")
     fun getUserProfile(
         @Path("id") userId: String,
@@ -98,6 +103,12 @@ interface ApiService {
         @Path("id") userId: String,
         @Header("Authorization") token: String,
         @Body updatedFields: Map<String, @JvmSuppressWildcards Any>
+    ): Call<Void>
+
+    @PUT("/users/{id}/approve")
+    fun approveUser(
+        @Path("id") userId: String,
+        @Header("Authorization") token: String,
     ): Call<Void>
 
 }
