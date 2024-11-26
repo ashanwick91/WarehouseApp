@@ -59,6 +59,13 @@ class AdminProfileFragment : Fragment() {
             requireActivity().finish()
         }
 
+        binding.cvCustomers.setOnClickListener{
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frame_container, ViewCustomersFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         return view
     }
 
