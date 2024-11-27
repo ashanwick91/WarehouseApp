@@ -272,4 +272,6 @@ class CustomerHomeFragment : Fragment(), OnProductItemClickListener {
         productAdapter.updateProductList(products)
     }
 
+
+
 }

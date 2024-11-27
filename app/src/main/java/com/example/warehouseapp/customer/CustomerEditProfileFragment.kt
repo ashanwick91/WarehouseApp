@@ -14,6 +14,7 @@ import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.databinding.FragmentCustomerEditProfileBinding
 import com.example.warehouseapp.model.Profile
 import com.example.warehouseapp.model.User
+import com.example.warehouseapp.util.ActivityLogger
 import com.example.warehouseapp.util.readBaseUrl
 import com.google.android.material.snackbar.Snackbar
 import retrofit2.Call
@@ -167,6 +168,14 @@ class CustomerEditProfileFragment : Fragment() {
                             "Profile updated successfully",
                             Snackbar.LENGTH_LONG
                         ).show()
+                        // Log the activity
+                        val updatedDetails = updatedFields.map { "${it.key}: ${it.value}" }.joinToString(", ")
+                        ActivityLogger.logActivity(
+                            context = requireContext(),
+                            apiService = apiService,
+                            action = "Profile Update",
+                            details = "Updated fields: $updatedDetails"
+                        )
                     } else {
                         Toast.makeText(
                             requireContext(),

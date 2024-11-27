@@ -1,5 +1,6 @@
 package com.example.warehouseapp.api
 
+import com.example.warehouseapp.model.ActivityLog
 import com.example.warehouseapp.model.FinancialReport
 import com.example.warehouseapp.model.LoginRequest
 import com.example.warehouseapp.model.LoginResponse
@@ -110,5 +111,14 @@ interface ApiService {
         @Path("id") userId: String,
         @Header("Authorization") token: String,
     ): Call<Void>
+
+    @POST("/activity-log")
+    fun logActivity(
+        @Header("Authorization") token: String,
+        @Body activityLog: ActivityLog
+    ): Call<Void>
+
+    @GET("/activity-log")
+    fun getActivityLogs(@Header("Authorization") token: String): Call<List<ActivityLog>>
 
 }
