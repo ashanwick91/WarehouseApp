@@ -16,7 +16,6 @@ import com.example.warehouseapp.auth.LoginActivity
 import com.example.warehouseapp.databinding.FragmentCustomerProfileBinding
 import com.example.warehouseapp.model.User
 import com.example.warehouseapp.util.ActivityLogger
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -67,13 +66,15 @@ class CustomerProfileFragment : Fragment() {
         binding.cardViewMyAccount.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.frame_container, CustomerEditProfileFragment())
+                .addToBackStack(null)
                 .commit()
         }
 
         binding.cardViewHistory.setOnClickListener {
-            navigateToFragment(CustomerHistoryFragment())
-            highlightBottomNavigation(R.id.bottom_history)
-
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frame_container, CustomerHistoryFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
         return view
@@ -84,19 +85,6 @@ class CustomerProfileFragment : Fragment() {
         val editor = sharedPref.edit()
         editor.remove("jwt_token")
         editor.apply()
-    }
-
-    private fun navigateToFragment(fragment: Fragment) {
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.frame_container, fragment)
-            .addToBackStack(null) // Maintain back stack for navigation
-            .commit()
-    }
-
-    private fun highlightBottomNavigation(itemId: Int) {
-        val bottomNavigationView =
-            requireActivity().findViewById<BottomNavigationView>(R.id.customer_bottom_navigation)
-        bottomNavigationView?.selectedItemId = itemId
     }
 
     private fun fetchUserData() {
