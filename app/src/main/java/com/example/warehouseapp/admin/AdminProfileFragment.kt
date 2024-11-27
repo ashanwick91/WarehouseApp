@@ -49,6 +49,13 @@ class AdminProfileFragment : Fragment() {
                 .commit()
         }
 
+        binding.cvProfile.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frame_container, AdminEditProfileFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         binding.adminBtnLogout.setOnClickListener {
             // Clear the JWT token from SharedPreferences
             clearTokenFromPreferences()
