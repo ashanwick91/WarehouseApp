@@ -78,8 +78,7 @@ class CustomerCartActivity : AppCompatActivity() {
         binding.cartItemsRecyclerView.adapter = adapter
         backImageView = binding.backButton
         backImageView.setOnClickListener {
-            val intent = Intent(this, CustomerActivity::class.java)
-            startActivity(intent)
+            super.onBackPressed()
         }
 
         checkoutButton.setOnClickListener {
