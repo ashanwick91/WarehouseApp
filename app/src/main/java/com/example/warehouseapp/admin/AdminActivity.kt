@@ -66,6 +66,7 @@ class AdminActivity : AppCompatActivity() {
 
         // Set up bottom navigation listener
         binding.bottomNavigation.setOnItemSelectedListener { item ->
+            supportFragmentManager.popBackStack()
             when (item.itemId) {
                 R.id.bottom_reports -> {
                     loadFragment(AdminReportsFragment())

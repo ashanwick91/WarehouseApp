@@ -25,6 +25,7 @@ class CustomerActivity : AppCompatActivity() {
 
         // Set up bottom navigation listener
         binding.customerBottomNavigation.setOnItemSelectedListener { item ->
+            supportFragmentManager.popBackStack()
             when (item.itemId) {
                 R.id.bottom_home -> {
                     binding.mainTitle.text = "HOME"

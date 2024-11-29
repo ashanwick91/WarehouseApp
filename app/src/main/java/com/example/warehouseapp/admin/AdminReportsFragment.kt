@@ -39,6 +39,7 @@ import java.io.File
 import java.io.FileWriter
 import java.io.OutputStreamWriter
 import java.util.Calendar
+import java.util.TimeZone
 
 class AdminReportsFragment : Fragment() {
 
@@ -178,7 +179,7 @@ class AdminReportsFragment : Fragment() {
             datePicker.addOnPositiveButtonClickListener { selection ->
                 if (selection != null) {
                     // Convert the selection (in milliseconds) to a readable date using Calendar
-                    val calendar = Calendar.getInstance()
+                    val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
                     calendar.timeInMillis = selection
 
                     // Extract the year, month, and day
