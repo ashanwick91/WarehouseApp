@@ -15,6 +15,7 @@ import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.auth.LoginActivity
 import com.example.warehouseapp.databinding.FragmentCustomerProfileBinding
 import com.example.warehouseapp.model.User
+import com.example.warehouseapp.util.ActivityLogger
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -50,6 +51,10 @@ class CustomerProfileFragment : Fragment() {
         fetchUserData()
 
         binding.customerBtnLogout.setOnClickListener {
+            // Log the logout activity
+            token?.let {
+                logLogoutActivity(it)
+            }
             // Clear the JWT token from SharedPreferences
             clearTokenFromPreferences()
             // Redirect to login screen
@@ -110,6 +115,16 @@ class CustomerProfileFragment : Fragment() {
         } else {
             Toast.makeText(requireContext(), "Token not found. Please log in again.", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun logLogoutActivity(token: String) {
+        val details = "User with ID $customerId logged out"
+        ActivityLogger.logActivity(
+            context = requireContext(),
+            apiService = apiService,
+            action = "Logout",
+            details = details
+        )
     }
 
 

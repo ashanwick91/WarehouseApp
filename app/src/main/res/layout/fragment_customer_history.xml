@@ -21,21 +21,20 @@ tools:context=".customer.CustomerHistoryFragment">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/title"
-            android:layout_width="350dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="125dp"
+            android:layout_gravity="start|center_vertical"
+            android:paddingStart="16dp"
             android:text="Order History"
             android:textColor="@android:color/white"
             android:textSize="20sp"
-            android:textStyle="bold"
-            tools:layout_editor_absoluteX="40dp"
-            tools:layout_editor_absoluteY="18dp" />
+            android:textStyle="bold" />
 
         <ImageView
             android:id="@+id/cart_icon"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="end|center_vertical"
             android:contentDescription="Back"
             android:padding="8dp"
             android:src="@drawable/baseline_shopping_cart_24"

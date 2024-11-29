@@ -73,6 +73,13 @@ class AdminProfileFragment : Fragment() {
                 .commit()
         }
 
+        binding.cvActivityLog.setOnClickListener{
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.frame_container, ActivityLogFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         return view
     }
 

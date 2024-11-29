@@ -14,6 +14,7 @@ import com.example.warehouseapp.api.RetrofitClient
 import com.example.warehouseapp.databinding.ActivityLoginBinding
 import com.example.warehouseapp.model.LoginRequest
 import com.example.warehouseapp.model.LoginResponse
+import com.example.warehouseapp.util.ActivityLogger
 import com.example.warehouseapp.util.readBaseUrl
 import com.google.android.material.snackbar.Snackbar
 import org.json.JSONObject
@@ -88,6 +89,14 @@ class LoginActivity : AppCompatActivity() {
 
                         // Save the token in SharedPreferences
                         saveTokenToPreferences(token)
+
+                        // Log activity after successful login
+                        ActivityLogger.logActivity(
+                            context = this@LoginActivity,
+                            apiService = apiService,
+                            action = "Login",
+                            details = "User $email logged in successfully"
+                        )
 
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         startActivity(intent)
