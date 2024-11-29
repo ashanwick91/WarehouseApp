@@ -24,6 +24,7 @@ import com.example.warehouseapp.databinding.ActivityCustomerCartBinding
 import com.example.warehouseapp.model.OrderRequest
 import com.example.warehouseapp.model.OrderItemRequest
 import com.example.warehouseapp.model.Product
+import com.example.warehouseapp.util.ActivityLogger
 import com.example.warehouseapp.util.CartPreferences
 import com.example.warehouseapp.util.readBaseUrl
 import com.google.android.material.snackbar.Snackbar
@@ -121,6 +122,25 @@ class CustomerCartActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         response.body()?.let {
                             onSuccess(it)
+                        }
+                        // Log the activity
+                        val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                        val token = sharedPref.getString("jwt_token", null)
+                        if (token != null) {
+                            val jwt = JWT(token)
+                            val userId = jwt.getClaim("_id").asString()
+
+                            val details =
+                                "Order placed with ${order.items.size} items, total: \$${order.orderTotal}"
+                            ActivityLogger.logActivity(
+                                apiService = apiService,
+                                action = "Order Placed",
+                                details = details,
+                                device = "Android",
+                                ip = "Unknown",
+                                location = "Unknown",
+                                context = this@CustomerCartActivity,
+                            )
                         }
                         Toast.makeText(
                             this@CustomerCartActivity,
