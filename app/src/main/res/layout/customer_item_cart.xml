@@ -16,6 +16,7 @@
         app:cardElevation="4dp"
         app:strokeColor="@color/stroke_color"
         app:strokeWidth="1dp"
+        app:cardBackgroundColor="@color/colorSecondary"
         tools:ignore="MissingConstraints">
 
         <LinearLayout
