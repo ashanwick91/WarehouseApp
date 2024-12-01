@@ -29,6 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="@color/colorSecondary"
             app:cardElevation="4dp">
 
             <LinearLayout
@@ -107,7 +108,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:backgroundTint="@android:color/system_surface_variant_light"
+                        android:backgroundTint="@color/colorSecondary"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/colorPrimary"
                         android:text="Generate"
                         android:textColor="?attr/actionModeSplitBackground" />
 
@@ -116,7 +119,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:backgroundTint="@android:color/system_surface_variant_light"
+                        android:backgroundTint="@color/colorSecondary"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/colorPrimary"
                         android:text="Clear"
                         android:textColor="?attr/actionModeSplitBackground" />
 
@@ -124,7 +129,9 @@
                         android:id="@+id/adminBtnDownloadReport"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="@android:color/system_surface_variant_light"
+                        android:backgroundTint="@color/colorSecondary"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/colorPrimary"
                         android:text="Download"
                         android:textColor="?attr/actionModeSplitBackground" />
                 </LinearLayout>
@@ -147,6 +154,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     app:cardCornerRadius="8dp"
+                    app:cardBackgroundColor="@color/colorSecondary"
                     app:cardElevation="4dp">
 
                     <com.github.mikephil.charting.charts.PieChart
@@ -196,6 +204,7 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:scrollbars="vertical"
+                    app:cardBackgroundColor="@color/colorSecondary"
                     tools:listitem="@layout/item_sales_data" />
 
             </LinearLayout>

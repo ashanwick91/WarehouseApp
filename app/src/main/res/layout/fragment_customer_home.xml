@@ -66,13 +66,16 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:hint="Search products"
-            android:textSize="18sp" />
+            android:padding="10dp"
+            android:textSize="16sp" />
 
         <ImageView
             android:id="@+id/searchIcon"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:padding="4dp"
             android:src="@drawable/ic_search"
             app:tint="@color/gray" />
     </LinearLayout>
@@ -89,6 +92,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:singleSelection="true"
+
         android:orientation="horizontal">
 
         <!-- Sort by Price Chip -->
@@ -98,6 +102,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Sort by Price"
+            app:chipBackgroundColor="@color/white"
+            app:chipStrokeColor="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            app:chipStrokeWidth="1dp"
             app:chipIcon="@drawable/ic_arrow_up" />
 
         <!-- Category Buttons -->
@@ -107,6 +115,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
+            app:chipBackgroundColor="@color/white"
+            app:chipStrokeColor="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            app:chipStrokeWidth="1dp"
             android:text="Boots" />
 
         <com.google.android.material.chip.Chip
@@ -115,6 +127,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
+            app:chipBackgroundColor="@color/white"
+            app:chipStrokeColor="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            app:chipStrokeWidth="1dp"
             android:text="Casual" />
 
         <com.google.android.material.chip.Chip
@@ -123,6 +139,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
+            app:chipBackgroundColor="@color/white"
+            app:chipStrokeColor="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            app:chipStrokeWidth="1dp"
             android:text="Sports" />
     </com.google.android.material.chip.ChipGroup>
 
