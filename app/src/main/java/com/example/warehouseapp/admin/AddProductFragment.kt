@@ -152,6 +152,7 @@ class AddProductFragment(
         binding.nameInput.setText(product.name)
         binding.descInput.setText(product.description)
         binding.priceInput.setText(product.price.toString())
+        binding.originalPriceInput.setText(product.originalPrice.toString())
         binding.qtyInput.setText(product.quantity.toString())
     }
 
@@ -305,6 +306,15 @@ class AddProductFragment(
             binding.priceLayout.error = null
         }
 
+        // Validate original price
+        val originalPrice = binding.originalPriceInput.text.toString().trim()
+        if (originalPrice.isEmpty() || originalPrice.toDoubleOrNull() == null || originalPrice.toDouble() <= 0) {
+            binding.originalPriceLayout.error = "Enter a valid price"
+            isValid = false
+        } else {
+            binding.originalPriceLayout.error = null
+        }
+
         // Validate quantity
         val quantity = binding.qtyInput.text.toString().trim()
         if (quantity.isEmpty() || quantity.toIntOrNull() == null || quantity.toInt() < 0) {
@@ -322,6 +332,7 @@ class AddProductFragment(
             name = binding.nameInput.text.toString().trim(),
             description = binding.descInput.text.toString().trim(),
             price = binding.priceInput.text.toString().toDouble(),
+            originalPrice = binding.originalPriceInput.text.toString().toDouble(),
             category = binding.catInput.text.toString(),
             imageUrl = imageUrl,
             quantity = binding.qtyInput.text.toString().toInt()
@@ -385,6 +396,7 @@ class AddProductFragment(
             name = binding.nameInput.text.toString().trim(),
             description = binding.descInput.text.toString().trim(),
             price = binding.priceInput.text.toString().toDouble(),
+            originalPrice = binding.originalPriceInput.text.toString().toDouble(),
             category = binding.catInput.text.toString(),
             imageUrl = imageUrl,
             quantity = binding.qtyInput.text.toString().toInt(),
@@ -445,6 +457,7 @@ class AddProductFragment(
         binding.nameInput.text?.clear()
         binding.descInput.text?.clear()
         binding.priceInput.text?.clear()
+        binding.originalPriceInput.text?.clear()
         binding.catInput.setText(categories[0], false)
         binding.ivProductImage.setImageResource(R.drawable.placeholder_image)
         binding.btnUploadImage.isEnabled = false

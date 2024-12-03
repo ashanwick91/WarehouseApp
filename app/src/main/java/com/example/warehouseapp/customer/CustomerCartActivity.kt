@@ -157,6 +157,7 @@ class CustomerCartActivity : AppCompatActivity() {
 
                         // Optionally clear the cart after checkout
                         CartPreferences.saveCart(this@CustomerCartActivity, emptyList())
+                        finish()
                     } else {
                         onError("Error: ${response.message()}")
                     }

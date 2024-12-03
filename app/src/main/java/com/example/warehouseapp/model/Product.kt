@@ -9,6 +9,7 @@ data class Product(
     val name: String,
     val description: String,
     val price: Double,
+    val originalPrice: Double,
     val category: String,  // Example: "Electronics", "Furniture"
     val imageUrl: String?,  // URL to the product image
     var quantity: Int,  // Current stock
