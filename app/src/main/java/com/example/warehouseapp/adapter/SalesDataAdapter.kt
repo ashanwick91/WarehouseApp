@@ -1,5 +1,6 @@
 package com.example.warehouseapp.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +29,7 @@ class SalesDataAdapter(private var salesDataList: List<SalesDataProduct>) :
         return SalesDataViewHolder(view)
     }
 
+    @SuppressLint("DefaultLocale", "SetTextI18n")
     override fun onBindViewHolder(holder: SalesDataViewHolder, position: Int) {
         val salesData = salesDataList[position]
         val formattedSales = String.format("%.2f", salesData.totalSalesProduct)
