@@ -30,9 +30,11 @@ class SalesDataAdapter(private var salesDataList: List<SalesDataProduct>) :
 
     override fun onBindViewHolder(holder: SalesDataViewHolder, position: Int) {
         val salesData = salesDataList[position]
+        val formattedSales = String.format("%.2f", salesData.totalSalesProduct)
+        val formattedProfit = String.format("%.2f", salesData.totalProfitProduct)
         holder.productName.text = salesData.product
-        holder.salesPercentage.text = "${salesData.totalSalesProduct}"
-        holder.profitAmount.text = "${salesData.totalProfitProduct}"
+        holder.salesPercentage.text = "$ $formattedSales"
+        holder.profitAmount.text = "$ $formattedProfit"
     }
 
     override fun getItemCount(): Int = salesDataList.size
