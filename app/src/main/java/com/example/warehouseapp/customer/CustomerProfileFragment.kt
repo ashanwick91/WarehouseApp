@@ -97,7 +97,7 @@ class CustomerProfileFragment : Fragment() {
                     if (response.isSuccessful && response.body() != null) {
                         val user = response.body()!!
                         // Set customer name and email
-                        binding.customerName.text = "${user.profile?.firstName} ${user.profile?.lastName}"
+                        binding.customerName.text = String.format("${user.profile?.firstName ?: ""} ${user.profile?.lastName ?: ""}")
                         binding.customerEmail.text = user.email
                     } else {
                         Toast.makeText(
