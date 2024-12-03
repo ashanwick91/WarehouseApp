@@ -34,6 +34,7 @@ class AdminProductAdapter(
             binding.tvPriceAdmin.text = String.format("$${item.price}")
             binding.tvNameAdmin.text = item.name
             binding.tvQtyAdmin.text = String.format("Available Qty: ${item.quantity}")
+            binding.tvOriginalPriceAdmin.text = String.format("Original Price: $${item.originalPrice}")
             binding.tvDescriptionAdmin.text = String.format("Description: ${item.description}")
             binding.tvCategoryAdmin.text = String.format("Category: ${item.category}")
 

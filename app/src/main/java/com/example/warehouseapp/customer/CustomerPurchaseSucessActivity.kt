@@ -33,6 +33,7 @@ class CustomerPurchaseSucessActivity : AppCompatActivity() {
             val orderEditor = orderPref.edit()
             orderEditor.clear()
             orderEditor.apply()
+            finish()
         }
 
 
