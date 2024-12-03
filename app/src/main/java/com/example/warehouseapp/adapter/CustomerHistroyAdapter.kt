@@ -51,7 +51,7 @@ class CustomerHistroyAdapter(
             holder.orderStatus.setTextColor(Color.parseColor("#8080ff")) // Blue
         }
 
-        holder.noItems.text = "Number of Items: " + item.items.size.toString()
+        holder.noItems.text = "Number of Products: " + item.items.size.toString()
         holder.paymentAmount.text = "Total price : $" + item.orderTotal.toString()
         // Handle item click
         holder.itemView.setOnClickListener {
