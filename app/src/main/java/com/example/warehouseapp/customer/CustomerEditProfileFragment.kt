@@ -78,6 +78,7 @@ class CustomerEditProfileFragment : Fragment() {
                         binding.editTextEmail.setText(user.email)
                         binding.editTextPassword.setText("")
                         binding.editTextAddress.setText(user.profile?.address)
+                        binding.editTextPhone.setText(user.profile?.phoneNumber)
                     } else {
                         Toast.makeText(
                             requireContext(),
